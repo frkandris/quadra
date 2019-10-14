@@ -19,16 +19,31 @@ siteConfig.initNconf().then(function() {
 }).then(function() {
 
     /* Start app */
-    require('../app/server').listen(nconf.get('app:APP_PORT'), nconf.get('app:APP_HOST'), function() {
+    var server = require('../app/server').listen(nconf.get('app:APP_PORT'), nconf.get('app:APP_HOST'), function() {
         if (process.env.NODE_ENV === "production") {
             console.log(moment().format('YYYY-MM-DD HH:mm:ss') + " | APP | " + nconf.get('app:APP_NAME') + " is running.");
         } else {
             console.log("APP | " + nconf.get('app:APP_NAME') + " is running on " + nconf.get('app:APP_URL'));
         }
     });
+    const io = require('socket.io').listen(server);
+
+    io.on('connection', function(socket){
+        console.log('a user connected');
+        socket.on('disconnect', function(){
+            console.log('user disconnected');
+        });
+        socket.on('clientEvent', function(clientEvent){
+            console.log('clientEvent', clientEvent);
+            io.emit('serverEvent', clientEvent);
+        });
+    });
+
 }).catch(function(reason) {
     console.log("APP | FATAL: Error during app loading.", {detailedMessage: reason.stack.substring(0, 512)});
     console.log(moment().format('YYYY-MM-DD HH:mm:ss') + ' | APP | FATAL: Error during app loading.');
 });
+
+
 
 /* ----------------------------- Module exports ----------------------------- */

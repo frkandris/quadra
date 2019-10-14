@@ -19,6 +19,15 @@ const recordGame = require('./includes/recordGame');
 
 const blockGenerator = require('./includes/blockGenerator');
 
+var socket = io();
+
+
+function sendGameEvent(eventValue) {
+    socket.emit('clientEvent', eventValue);
+}
+socket.on('serverEvent', function(serverEvent){
+    console.log('serverEvent', serverEvent);
+});
 
     // this function gets called if there was a keyboard event
 
@@ -29,22 +38,27 @@ const blockGenerator = require('./includes/blockGenerator');
             switch (event.key) {
                 case 'ArrowUp':
                     recordGame.saveGameEvent(playerLevelEnvironment.frameNumber, 'keyPressed', 'rotateRight');
+                    sendGameEvent('rotateRight');
                     handlePlayerInput('rotateRight');
                     break;
                 case 'ArrowDown':
                     recordGame.saveGameEvent(playerLevelEnvironment.frameNumber, 'keyPressed', 'rotateLeft');
+                    sendGameEvent('rotateLeft');
                     handlePlayerInput('rotateLeft');
                     break;
                 case 'ArrowLeft':
                     recordGame.saveGameEvent(playerLevelEnvironment.frameNumber, 'keyPressed', 'moveLeft');
+                    sendGameEvent('moveLeft');
                     handlePlayerInput('moveLeft');
                     break;
                 case 'ArrowRight':
                     recordGame.saveGameEvent(playerLevelEnvironment.frameNumber, 'keyPressed', 'moveRight');
+                    sendGameEvent('moveRight');
                     handlePlayerInput('moveRight');
                     break;
                 case ' ':
                     recordGame.saveGameEvent(playerLevelEnvironment.frameNumber, 'keyPressed', 'instantDrop');
+                    sendGameEvent('instantDrop');
                     handlePlayerInput('instantDrop');
                     break;
                 default:
