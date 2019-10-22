@@ -31,30 +31,20 @@ router.get('/', function (req, res) {
 
 /* GET game page. */
 router.get('/game', function (req, res) {
-
-    // increase gamesPlayed
-    Counter.findOneAndUpdate(
-        {
-            counterName: 'gamesPlayed'
-        },
-        {
-            $inc: {
-                counterValue: 1
-            }
-        },
-        {
-            upsert: true,
-            new: true
-        },
-        function (err, counter) {
-            if (err) {
-                console.log('game | error | could not increase gamesPlayed counter', counter);
-            } else {
-                // success
-            }
-        });
-
+    increaseGamePlayedCounter();
     res.render('game');
+});
+
+
+/* GET multiplayergame page. */
+router.get('/game/:roomId', function (req, res) {
+
+    increaseGamePlayedCounter();
+
+    const roomId = Number(req.params.roomId);
+    res.render('game', {
+        roomId: roomId
+    });
 });
 
 
@@ -183,5 +173,32 @@ router.get('/about', function (req, res) {
         });
     });
 });
+
+
+function increaseGamePlayedCounter() {
+
+    // increase gamesPlayed
+    Counter.findOneAndUpdate(
+        {
+            counterName: 'gamesPlayed'
+        },
+        {
+            $inc: {
+                counterValue: 1
+            }
+        },
+        {
+            upsert: true,
+            new: true
+        },
+        function (err, counter) {
+            if (err) {
+                console.log('game | error | could not increase gamesPlayed counter', counter);
+            } else {
+                // success
+            }
+        }
+    );
+}
 
 module.exports = router;
