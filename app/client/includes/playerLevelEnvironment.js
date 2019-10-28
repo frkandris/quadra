@@ -40,6 +40,10 @@ if (playerName === '') {
     playerName = 'Anonymous ' + animals[Math.floor(Math.random() * animals.length)];
 }
 
+const min = 10000000;
+const max = 99999999;
+playerId = Math.floor(Math.random() * (max - min + 1) + min);
+
 module.exports = {
     fallingSpeed,
     selectANewBlockNextFrame,
@@ -61,5 +65,6 @@ module.exports = {
     rotationIndex,
     gameLevel,
     points,
-    playerName
+    playerName,
+    playerId
 };

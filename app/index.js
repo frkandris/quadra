@@ -33,9 +33,9 @@ siteConfig.initNconf().then(function() {
         socket.on('disconnect', function(){
             console.log('user disconnected');
         });
-        socket.on('clientEvent', function(clientEvent){
-            console.log('clientEvent', clientEvent);
-            io.emit('serverEvent', clientEvent);
+        socket.on('clientEvent', function(clientEvent, playerId){
+            console.log('clientEvent', clientEvent, playerId);
+            io.emit('serverEvent', clientEvent, playerId);
         });
     });
 

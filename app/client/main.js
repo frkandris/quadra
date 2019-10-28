@@ -23,10 +23,10 @@ var socket = io();
 
 
 function sendGameEvent(eventValue) {
-    socket.emit('clientEvent', eventValue);
+    socket.emit('clientEvent', eventValue, playerLevelEnvironment.playerId);
 }
-socket.on('serverEvent', function(serverEvent){
-    console.log('serverEvent', serverEvent);
+socket.on('serverEvent', function(serverEvent, playerId){
+    console.log('serverEvent', serverEvent, playerId);
 });
 
     // this function gets called if there was a keyboard event
