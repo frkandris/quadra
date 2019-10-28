@@ -19,7 +19,7 @@ const recordGame = require('./includes/recordGame');
 
 const blockGenerator = require('./includes/blockGenerator');
 
-var socket = io();
+const socket = io();
 
 
 function sendGameEvent(eventValue) {
