@@ -1,6 +1,10 @@
-const playerLevelEnvironment = require('./playerLevelEnvironment');
+const numberOfPlayers = 2;
+let playerLevelEnvironment = [];
+for (let i = 0; i < numberOfPlayers; i++) {
+    playerLevelEnvironment[i] = require('./playerLevelEnvironment');
+}
 
-const gameStartText = "<span class=text-light>Game started! Good luck " + playerLevelEnvironment.playerName + "!</span>";
+const gameStartText = "<span class=text-light>Game started! Good luck " + playerLevelEnvironment[0].playerName + "!</span>";
 const replayStartText = "<span class=text-light>Replay started!</span>";
 const gameOverText = "<span class=text-light>Game over!</span>";
 const replayOverText = "<span class=text-light>Replay over!</span>";
@@ -62,9 +66,9 @@ function sayLevelIncreased(gameLevel) {
 
 function sayPointsReceived(pointsReceived, numberOfNewLinesCleared) {
     if (numberOfNewLinesCleared === 1) {
-        saySomething("<span class=text-light>+" + numberWithCommas(pointsReceived) + " points</span> (1 line cleared on level#" + playerLevelEnvironment.gameLevel + ", " + numberWithCommas(playerLevelEnvironment.points) + " points overall)");
+        saySomething("<span class=text-light>+" + numberWithCommas(pointsReceived) + " points</span> (1 line cleared on level#" + playerLevelEnvironment[0].gameLevel + ", " + numberWithCommas(playerLevelEnvironment[0].points) + " points overall)");
     } else {
-        saySomething("<span class=text-light>+" + numberWithCommas(pointsReceived) + " points</span> (" + numberOfNewLinesCleared + " lines cleared on level#" + playerLevelEnvironment.gameLevel + ", " + numberWithCommas(playerLevelEnvironment.points) + " points overall)");
+        saySomething("<span class=text-light>+" + numberWithCommas(pointsReceived) + " points</span> (" + numberOfNewLinesCleared + " lines cleared on level#" + playerLevelEnvironment[0].gameLevel + ", " + numberWithCommas(playerLevelEnvironment[0].points) + " points overall)");
     }
 }
 
@@ -81,8 +85,8 @@ function sayGameEndStats(numberOfLinesCleared, gameTimeInSeconds, numberOfBlocks
     saySomething("- <span class=text-light>" + Math.round(gameTimeInSeconds) + " seconds</span> game time.");
     saySomething("- <span class=text-light>" + numberOfBlocks + " blocks</span> served.");
     saySomething("- <span class=text-light>" + blocksPerMinute + " blocks/minute</span> player speed.");
-    saySomething("- <span class=text-light>" + numberWithCommas(playerLevelEnvironment.points) + " points</span> reached.");
-    saySomething("- <span class=text-light>Level#" + playerLevelEnvironment.gameLevel + "</span> reached.")
+    saySomething("- <span class=text-light>" + numberWithCommas(playerLevelEnvironment[0].points) + " points</span> reached.");
+    saySomething("- <span class=text-light>Level#" + playerLevelEnvironment[0].gameLevel + "</span> reached.")
 }
 
 
