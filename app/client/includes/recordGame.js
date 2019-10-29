@@ -5,12 +5,13 @@ let playerLevelEnvironment = [];
 for (let i = 0; i < numberOfPlayers; i++) {
     playerLevelEnvironment[i] = require('./playerLevelEnvironment');
 }
+const currentPlayer = 0;
 
 const axios = require('axios');
 
 
 function saveGameEvent(frameNumber, eventName, eventValue) {
-    playerLevelEnvironment[0].logOfEvents.push({
+    playerLevelEnvironment[currentPlayer].logOfEvents.push({
         frameNumber: frameNumber,
         eventName: eventName,
         eventValue: eventValue
@@ -22,10 +23,10 @@ function saveGameToServer() {
 
     const params = {
         gameBlocks: gameLevelEnvironment.allBlocks,
-        gameString: playerLevelEnvironment[0].logOfEvents,
-        playerName: playerLevelEnvironment[0].playerName,
-        gameLevel: playerLevelEnvironment[0].gameLevel,
-        points: playerLevelEnvironment[0].points
+        gameString: playerLevelEnvironment[currentPlayer].logOfEvents,
+        playerName: playerLevelEnvironment[currentPlayer].playerName,
+        gameLevel: playerLevelEnvironment[currentPlayer].gameLevel,
+        points: playerLevelEnvironment[currentPlayer].points
     };
 
     // ajax load URL and increase global linesCleared counter

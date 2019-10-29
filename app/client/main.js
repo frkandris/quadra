@@ -6,6 +6,8 @@ for (let i = 0; i < numberOfPlayers; i++) {
     playerLevelEnvironment[i] = require('./includes/playerLevelEnvironment');
 }
 
+const currentPlayer = 0;
+
 const blockMap = require('./includes/blockMap');
 const colorRelated = require('./includes/colorRelated');
 const statRelated = require('./includes/statRelated');
@@ -23,7 +25,7 @@ const currentGravityCalculationArea = calculationAreaDefinitions.currentGravityC
 const socket = io();
 
 function sendGameEvent(eventValue) {
-    socket.emit('clientEvent', eventValue, playerLevelEnvironment[0].playerId);
+    socket.emit('clientEvent', eventValue, playerLevelEnvironment[currentPlayer].playerId);
 }
 socket.on('serverEvent', function(serverEvent, playerId){
     console.log('serverEvent', serverEvent, playerId);
@@ -37,27 +39,27 @@ socket.on('serverEvent', function(serverEvent, playerId){
         if(!replayingAGame) {
             switch (event.key) {
                 case 'ArrowUp':
-                    recordGame.saveGameEvent(playerLevelEnvironment[0].frameNumber, 'keyPressed', 'rotateRight');
+                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'rotateRight');
                     sendGameEvent('rotateRight');
                     handlePlayerInput('rotateRight');
                     break;
                 case 'ArrowDown':
-                    recordGame.saveGameEvent(playerLevelEnvironment[0].frameNumber, 'keyPressed', 'rotateLeft');
+                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'rotateLeft');
                     sendGameEvent('rotateLeft');
                     handlePlayerInput('rotateLeft');
                     break;
                 case 'ArrowLeft':
-                    recordGame.saveGameEvent(playerLevelEnvironment[0].frameNumber, 'keyPressed', 'moveLeft');
+                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'moveLeft');
                     sendGameEvent('moveLeft');
                     handlePlayerInput('moveLeft');
                     break;
                 case 'ArrowRight':
-                    recordGame.saveGameEvent(playerLevelEnvironment[0].frameNumber, 'keyPressed', 'moveRight');
+                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'moveRight');
                     sendGameEvent('moveRight');
                     handlePlayerInput('moveRight');
                     break;
                 case ' ':
-                    recordGame.saveGameEvent(playerLevelEnvironment[0].frameNumber, 'keyPressed', 'instantDrop');
+                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'instantDrop');
                     sendGameEvent('instantDrop');
                     handlePlayerInput('instantDrop');
                     break;
@@ -73,7 +75,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     function checkPlayerInputFromRecording() {
         for (let i = 0; i < preloadedGameString.length; i++) {
-            if (preloadedGameString[i].frameNumber === playerLevelEnvironment[0].frameNumber) {
+            if (preloadedGameString[i].frameNumber === playerLevelEnvironment[currentPlayer].frameNumber) {
                 handlePlayerInput(preloadedGameString[i].eventValue);
             }
         }
@@ -95,8 +97,8 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 break;
             case 'instantDrop':
                 // instant drop
-                while (playerLevelEnvironment[0].moveCanBeDone === true) {
-                    playerLevelEnvironment[0].yPlayArea = playerLevelEnvironment[0].yPlayArea + gameLevelEnvironment.pixelSize;
+                while (playerLevelEnvironment[currentPlayer].moveCanBeDone === true) {
+                    playerLevelEnvironment[currentPlayer].yPlayArea = playerLevelEnvironment[currentPlayer].yPlayArea + gameLevelEnvironment.pixelSize;
                     moveBlockInCalculationArea('moveDown');
                 }
                 break;
@@ -118,7 +120,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
         let rotationModifier = 0;
         let isRectangleFilled;
 
-        let numberOfRotations = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex]).length;
+        let numberOfRotations = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex]).length;
 
         if (direction === 'moveDown') {
             // calculationArea modifications
@@ -128,27 +130,27 @@ socket.on('serverEvent', function(serverEvent, playerId){
             // calculationArea modifications
             xCalculationAreaModifier = 1;
             // playArea modifications
-            playerLevelEnvironment[0].xPlayArea = playerLevelEnvironment[0].xPlayArea - gameLevelEnvironment.pixelSize;
+            playerLevelEnvironment[currentPlayer].xPlayArea = playerLevelEnvironment[currentPlayer].xPlayArea - gameLevelEnvironment.pixelSize;
         }
         if (direction === 'moveRight') {
             // calculationArea modifications
             xCalculationAreaModifier = -1;
             // playArea modifications
-            playerLevelEnvironment[0].xPlayArea = playerLevelEnvironment[0].xPlayArea + gameLevelEnvironment.pixelSize;
+            playerLevelEnvironment[currentPlayer].xPlayArea = playerLevelEnvironment[currentPlayer].xPlayArea + gameLevelEnvironment.pixelSize;
         }
         if (direction === 'rotateLeft') {
             // calculationArea modifications
-            playerLevelEnvironment[0].rotationIndex++;
-            if (playerLevelEnvironment[0].rotationIndex === numberOfRotations) {
-                playerLevelEnvironment[0].rotationIndex = 0;
+            playerLevelEnvironment[currentPlayer].rotationIndex++;
+            if (playerLevelEnvironment[currentPlayer].rotationIndex === numberOfRotations) {
+                playerLevelEnvironment[currentPlayer].rotationIndex = 0;
             }
             rotationModifier = -1;
         }
         if (direction === 'rotateRight') {
             // calculationArea modifications
-            playerLevelEnvironment[0].rotationIndex--;
-            if (playerLevelEnvironment[0].rotationIndex < 0) {
-                playerLevelEnvironment[0].rotationIndex = numberOfRotations - 1;
+            playerLevelEnvironment[currentPlayer].rotationIndex--;
+            if (playerLevelEnvironment[currentPlayer].rotationIndex < 0) {
+                playerLevelEnvironment[currentPlayer].rotationIndex = numberOfRotations - 1;
             }
             rotationModifier = 1;
         }
@@ -158,7 +160,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // test if we can make the move
 
-        playerLevelEnvironment[0].moveCanBeDone = true;
+        playerLevelEnvironment[currentPlayer].moveCanBeDone = true;
 
         // 1.0. copy currentCalculationArea to tempCalculationArea
 
@@ -172,22 +174,22 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // 1.1. remove blockMap from tempCalculationArea
 
-        playerLevelEnvironment[0].rotationIndex += rotationModifier;
-        if (playerLevelEnvironment[0].rotationIndex < 0) {
-            playerLevelEnvironment[0].rotationIndex = numberOfRotations - 1;
+        playerLevelEnvironment[currentPlayer].rotationIndex += rotationModifier;
+        if (playerLevelEnvironment[currentPlayer].rotationIndex < 0) {
+            playerLevelEnvironment[currentPlayer].rotationIndex = numberOfRotations - 1;
         }
-        if (playerLevelEnvironment[0].rotationIndex === numberOfRotations) {
-            playerLevelEnvironment[0].rotationIndex = 0;
+        if (playerLevelEnvironment[currentPlayer].rotationIndex === numberOfRotations) {
+            playerLevelEnvironment[currentPlayer].rotationIndex = 0;
         }
 
-        let blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex]).length;
-        let blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][0]).length;
+        let blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex]).length;
+        let blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][0]).length;
         for (y = 0; y < blockMapNumberOfRows; y++) {
             for (x = 0; x < blockMapNumberOfColumns; x++) {
-                isRectangleFilled = blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][y][x];
+                isRectangleFilled = blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][y][x];
                 if (isRectangleFilled === 1) {
-                    yOnCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + y + yCalculationAreaModifier;
-                    xOnCalculationArea = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize) + x + xCalculationAreaModifier;
+                    yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y + yCalculationAreaModifier;
+                    xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x + xCalculationAreaModifier;
                     tempCalculationArea[yOnCalculationArea][xOnCalculationArea] = 0;
                 }
             }
@@ -195,55 +197,55 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // 1.2. test if we could add the block to tempCalculationArea without overlap or any other problems
 
-        playerLevelEnvironment[0].rotationIndex -= rotationModifier;
-        if (playerLevelEnvironment[0].rotationIndex < 0) {
-            playerLevelEnvironment[0].rotationIndex = numberOfRotations - 1;
+        playerLevelEnvironment[currentPlayer].rotationIndex -= rotationModifier;
+        if (playerLevelEnvironment[currentPlayer].rotationIndex < 0) {
+            playerLevelEnvironment[currentPlayer].rotationIndex = numberOfRotations - 1;
         }
-        if (playerLevelEnvironment[0].rotationIndex === numberOfRotations) {
-            playerLevelEnvironment[0].rotationIndex = 0;
+        if (playerLevelEnvironment[currentPlayer].rotationIndex === numberOfRotations) {
+            playerLevelEnvironment[currentPlayer].rotationIndex = 0;
         }
-        blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex]).length;
-        blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][0]).length;
+        blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex]).length;
+        blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][0]).length;
 
         for (y = 0; y < blockMapNumberOfRows; y++) {
             for (x = 0; x < blockMapNumberOfColumns; x++) {
-                isRectangleFilled = blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][y][x];
+                isRectangleFilled = blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][y][x];
                 if (isRectangleFilled === 1) {
-                    yOnCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + y;
-                    xOnCalculationArea = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize) + x;
+                    yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y;
+                    xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
                     if (yOnCalculationArea > (numberOfRows - 2)) {
                         // block reached the bottom
-                        playerLevelEnvironment[0].selectANewBlockNextFrame = true;
-                        playerLevelEnvironment[0].moveCanBeDone = false;
+                        playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = true;
+                        playerLevelEnvironment[currentPlayer].moveCanBeDone = false;
                     }
                     if (tempCalculationArea[yOnCalculationArea][xOnCalculationArea] !== 0) {
                         // move can not be done, as the block in the new position would overlap with something
-                        playerLevelEnvironment[0].moveCanBeDone = false;
+                        playerLevelEnvironment[currentPlayer].moveCanBeDone = false;
                     }
                 }
             }
         }
 
-        if (playerLevelEnvironment[0].moveCanBeDone === true) {
+        if (playerLevelEnvironment[currentPlayer].moveCanBeDone === true) {
 
             // 1.3. move can be done - remove blockMap from currentCalculationArea
 
-            playerLevelEnvironment[0].rotationIndex += rotationModifier;
-            if (playerLevelEnvironment[0].rotationIndex < 0) {
-                playerLevelEnvironment[0].rotationIndex = numberOfRotations - 1;
+            playerLevelEnvironment[currentPlayer].rotationIndex += rotationModifier;
+            if (playerLevelEnvironment[currentPlayer].rotationIndex < 0) {
+                playerLevelEnvironment[currentPlayer].rotationIndex = numberOfRotations - 1;
             }
-            if (playerLevelEnvironment[0].rotationIndex === numberOfRotations) {
-                playerLevelEnvironment[0].rotationIndex = 0;
+            if (playerLevelEnvironment[currentPlayer].rotationIndex === numberOfRotations) {
+                playerLevelEnvironment[currentPlayer].rotationIndex = 0;
             }
-            blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex]).length;
-            blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][0]).length;
+            blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex]).length;
+            blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][0]).length;
 
             for (y = 0; y < blockMapNumberOfRows; y++) {
                 for (x = 0; x < blockMapNumberOfColumns; x++) {
-                    isRectangleFilled = blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][y][x];
+                    isRectangleFilled = blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][y][x];
                     if (isRectangleFilled === 1) {
-                        yOnCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + y + yCalculationAreaModifier;
-                        xOnCalculationArea = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize) + x + xCalculationAreaModifier;
+                        yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y + yCalculationAreaModifier;
+                        xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x + xCalculationAreaModifier;
                         currentCalculationArea[yOnCalculationArea][xOnCalculationArea] = 0;
                     }
                 }
@@ -251,49 +253,49 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
             // 1.4. add blockMap to currentCalculationArea
 
-            playerLevelEnvironment[0].rotationIndex -= rotationModifier;
-            if (playerLevelEnvironment[0].rotationIndex < 0) {
-                playerLevelEnvironment[0].rotationIndex = numberOfRotations - 1;
+            playerLevelEnvironment[currentPlayer].rotationIndex -= rotationModifier;
+            if (playerLevelEnvironment[currentPlayer].rotationIndex < 0) {
+                playerLevelEnvironment[currentPlayer].rotationIndex = numberOfRotations - 1;
             }
-            if (playerLevelEnvironment[0].rotationIndex === numberOfRotations) {
-                playerLevelEnvironment[0].rotationIndex = 0;
+            if (playerLevelEnvironment[currentPlayer].rotationIndex === numberOfRotations) {
+                playerLevelEnvironment[currentPlayer].rotationIndex = 0;
             }
-            blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex]).length;
-            blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][0]).length;
+            blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex]).length;
+            blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][0]).length;
             for (y = 0; y < blockMapNumberOfRows; y++) {
                 for (x = 0; x < blockMapNumberOfColumns; x++) {
-                    isRectangleFilled = blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][y][x];
+                    isRectangleFilled = blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][y][x];
                     if (isRectangleFilled === 1) {
-                        yOnCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + y;
-                        xOnCalculationArea = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize) + x;
-                        currentCalculationArea[yOnCalculationArea][xOnCalculationArea] = playerLevelEnvironment[0].blockIndex+1;
+                        yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y;
+                        xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
+                        currentCalculationArea[yOnCalculationArea][xOnCalculationArea] = playerLevelEnvironment[currentPlayer].blockIndex+1;
                     }
                 }
             }
-        } // if (playerLevelEnvironment[0].moveCanBeDone === true)
+        } // if (playerLevelEnvironment[currentPlayer].moveCanBeDone === true)
 
         else {
             // move can not be done
 
             if (direction === 'moveDown') {
-                playerLevelEnvironment[0].selectANewBlockNextFrame = true;
+                playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = true;
             }
             if (direction === 'moveLeft') {
-                playerLevelEnvironment[0].xPlayArea = playerLevelEnvironment[0].xPlayArea + gameLevelEnvironment.pixelSize;
+                playerLevelEnvironment[currentPlayer].xPlayArea = playerLevelEnvironment[currentPlayer].xPlayArea + gameLevelEnvironment.pixelSize;
             }
             if (direction === 'moveRight') {
-                playerLevelEnvironment[0].xPlayArea = playerLevelEnvironment[0].xPlayArea - gameLevelEnvironment.pixelSize;
+                playerLevelEnvironment[currentPlayer].xPlayArea = playerLevelEnvironment[currentPlayer].xPlayArea - gameLevelEnvironment.pixelSize;
             }
             if (direction === 'rotateLeft') {
-                playerLevelEnvironment[0].rotationIndex--;
-                if (playerLevelEnvironment[0].rotationIndex < 0) {
-                    playerLevelEnvironment[0].rotationIndex = numberOfRotations - 1;
+                playerLevelEnvironment[currentPlayer].rotationIndex--;
+                if (playerLevelEnvironment[currentPlayer].rotationIndex < 0) {
+                    playerLevelEnvironment[currentPlayer].rotationIndex = numberOfRotations - 1;
                 }
             }
             if (direction === 'rotateRight') {
-                playerLevelEnvironment[0].rotationIndex++;
-                if (playerLevelEnvironment[0].rotationIndex === numberOfRotations) {
-                    playerLevelEnvironment[0].rotationIndex = 0;
+                playerLevelEnvironment[currentPlayer].rotationIndex++;
+                if (playerLevelEnvironment[currentPlayer].rotationIndex === numberOfRotations) {
+                    playerLevelEnvironment[currentPlayer].rotationIndex = 0;
                 }
             }
         }
@@ -323,15 +325,15 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // remove current falling block from tempCalculationArea
 
-        const blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex]).length;
-        const blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][0]).length;
+        const blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex]).length;
+        const blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][0]).length;
         let isRectangleFilled;
         for (y = 0; y < blockMapNumberOfRows; y++) {
             for (x = 0; x < blockMapNumberOfColumns; x++) {
-                isRectangleFilled = blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][y][x];
+                isRectangleFilled = blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][y][x];
                 if (isRectangleFilled === 1) {
-                    const yOnCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + y;
-                    const xOnCalculationArea = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize) + x;
+                    const yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y;
+                    const xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
                     tempCalculationArea[yOnCalculationArea][xOnCalculationArea] = 0;
                 }
             }
@@ -345,15 +347,15 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // draw pixel perfect moving block
 
-        const xModifierInSquares = playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize;
-        const yModifierInSquares = playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize;
+        const xModifierInSquares = playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize;
+        const yModifierInSquares = playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize;
         const yModifierInPixels = 0;
-        const blockToDrawIndex = playerLevelEnvironment[0].blockIndex;
-        const blockToDrawRotation = playerLevelEnvironment[0].rotationIndex;
+        const blockToDrawIndex = playerLevelEnvironment[currentPlayer].blockIndex;
+        const blockToDrawRotation = playerLevelEnvironment[currentPlayer].rotationIndex;
         const drawEmptyLines = true;
         const blockMapToDraw = blockMap[blockToDrawIndex][blockToDrawRotation][blockToDrawRotation];
         const blockToDrawColor = colorRelated.getBlockColor(blockToDrawIndex);
-        drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[0].playAreaMode, playerLevelEnvironment[0].fullLines, playerLevelEnvironment[0].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[0].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
+        drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[currentPlayer].playAreaMode, playerLevelEnvironment[currentPlayer].fullLines, playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
 
     }
 
@@ -362,17 +364,17 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     function drawAllBlocksToPlayArea(ctx) {
 
-        // go thru the blocks one by one in playerLevelEnvironment[0].listOfBlocksInThePlayingArea
-        for (let i = 0; i < playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length; i++) {
+        // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
+        for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
 
             // draw the block
-            const xModifierInSquares = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockX;
-            const yModifierInSquares = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY + 1;
+            const xModifierInSquares = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX;
+            const yModifierInSquares = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + 1;
             const yModifierInPixels = 0;
             const drawEmptyLines = true;
-            const blockMapToDraw = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap;
-            const blockToDrawColor = colorRelated.getBlockColor(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockIndex);
-            drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[0].playAreaMode, playerLevelEnvironment[0].fullLines, playerLevelEnvironment[0].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[0].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
+            const blockMapToDraw = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap;
+            const blockToDrawColor = colorRelated.getBlockColor(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex);
+            drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[currentPlayer].playAreaMode, playerLevelEnvironment[currentPlayer].fullLines, playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
 
         }
     }
@@ -399,7 +401,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     function checkFullLineInCurrentCalculationArea(){
 
-        playerLevelEnvironment[0].fullLines = [];
+        playerLevelEnvironment[currentPlayer].fullLines = [];
         let fullLineFound = false;
 
         const numberOfRows = currentCalculationArea.length;
@@ -419,24 +421,24 @@ socket.on('serverEvent', function(serverEvent, playerId){
             if (numberOfFilledRectanglesInRow === numberOfColumns) {
                 // we've found a full line in row i
                 fullLineFound = true;
-                playerLevelEnvironment[0].fullLines.push(i);
+                playerLevelEnvironment[currentPlayer].fullLines.push(i);
             }
         }
         if (fullLineFound === true) {
-            playerLevelEnvironment[0].playAreaMode = 'fullLineRemoveAnimation';
-            let numberOfNewLinesCleared = playerLevelEnvironment[0].fullLines.length;
+            playerLevelEnvironment[currentPlayer].playAreaMode = 'fullLineRemoveAnimation';
+            let numberOfNewLinesCleared = playerLevelEnvironment[currentPlayer].fullLines.length;
             let numberOfLinesCleared = statRelated.increaseNumberOfLinesCleared(numberOfNewLinesCleared);
-            let pointsReceived = statRelated.calculatePointsReceived(numberOfNewLinesCleared, playerLevelEnvironment[0].gameLevel);
-            playerLevelEnvironment[0].points += pointsReceived;
+            let pointsReceived = statRelated.calculatePointsReceived(numberOfNewLinesCleared, playerLevelEnvironment[currentPlayer].gameLevel);
+            playerLevelEnvironment[currentPlayer].points += pointsReceived;
 
             chat.sayPointsReceived(pointsReceived, numberOfNewLinesCleared);
             if (
                 Math.round(numberOfLinesCleared / gameLevelEnvironment.numberOfLinesNeedsToBeClearedToIncreaseGameSpeed) !==
                 Math.round((numberOfLinesCleared-numberOfNewLinesCleared) / gameLevelEnvironment.numberOfLinesNeedsToBeClearedToIncreaseGameSpeed)
             ) {
-                playerLevelEnvironment[0].gameLevel++;
-                playerLevelEnvironment[0].fallingSpeed = playerLevelEnvironment[0].fallingSpeed + 0.5;
-                chat.sayLevelIncreased(playerLevelEnvironment[0].gameLevel);
+                playerLevelEnvironment[currentPlayer].gameLevel++;
+                playerLevelEnvironment[currentPlayer].fallingSpeed = playerLevelEnvironment[currentPlayer].fallingSpeed + 0.5;
+                chat.sayLevelIncreased(playerLevelEnvironment[currentPlayer].gameLevel);
             }
         }
     }
@@ -446,10 +448,10 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     function animateFullLines() {
 
-        playerLevelEnvironment[0].fullLineFadeAnimationCounter--;
+        playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter--;
 
-        if (playerLevelEnvironment[0].fullLineFadeAnimationCounter === 0) {
-            playerLevelEnvironment[0].fullLineFadeAnimationCounter = gameLevelEnvironment.fullLineFadeAnimationLength;
+        if (playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter === 0) {
+            playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter = gameLevelEnvironment.fullLineFadeAnimationLength;
             return true;
         } else {
             return false;
@@ -481,11 +483,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 }
             }
 
-            // modify playerLevelEnvironment[0].listOfBlocksInThePlayingArea because of full line
+            // modify playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea because of full line
             modifyListOfBlocksInThePlayingAreaBecauseOfFullLine(fullLine);
         }
 
-        playerLevelEnvironment[0].playAreaMode = 'gravityAnimation';
+        playerLevelEnvironment[currentPlayer].playAreaMode = 'gravityAnimation';
 
     }
 
@@ -502,14 +504,14 @@ socket.on('serverEvent', function(serverEvent, playerId){
         let isRectangleFilled;
         do {
             shadowCanBeMoved = true;
-            const blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex]).length;
-            const blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][0]).length;
+            const blockMapNumberOfRows = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex]).length;
+            const blockMapNumberOfColumns = Object.keys(blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][0]).length;
             for (let y = 0; y < blockMapNumberOfRows; y++) {
                 for (let x = 0; x < blockMapNumberOfColumns; x++) {
-                    isRectangleFilled = blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex][y][x];
+                    isRectangleFilled = blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex][y][x];
                     if (isRectangleFilled === 1) {
-                        const yOnCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + y + yModifier;
-                        const xOnCalculationArea = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize) + x;
+                        const yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y + yModifier;
+                        const xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
                         if (yOnCalculationArea > (numberOfRows - 2)) {
                             shadowCanBeMoved = false;
                         }
@@ -527,15 +529,15 @@ socket.on('serverEvent', function(serverEvent, playerId){
         const c = document.getElementById("playAreaCanvas[0]");
         const ctx = c.getContext("2d");
 
-        const xModifierInSquares = Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize);
-        const yModifierInSquares = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) + yModifier - 1;
+        const xModifierInSquares = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize);
+        const yModifierInSquares = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + yModifier - 1;
         const yModifierInPixels = 0;
-        const blockToDrawIndex = playerLevelEnvironment[0].blockIndex;
-        const blockToDrawRotation = playerLevelEnvironment[0].rotationIndex;
+        const blockToDrawIndex = playerLevelEnvironment[currentPlayer].blockIndex;
+        const blockToDrawRotation = playerLevelEnvironment[currentPlayer].rotationIndex;
         const drawEmptyLines = true;
         const blockMapToDraw = blockMap[blockToDrawIndex][blockToDrawRotation][blockToDrawRotation];
         const blockToDrawColor = colorRelated.getBlockColor('shadow');
-        drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[0].playAreaMode, playerLevelEnvironment[0].fullLines, playerLevelEnvironment[0].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[0].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
+        drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[currentPlayer].playAreaMode, playerLevelEnvironment[currentPlayer].fullLines, playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
 
     }
 
@@ -550,7 +552,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
         ctx.clearRect(0, 0, c.width, c.height);
 
         for (let i = 0; i < gameLevelEnvironment.numberOfBlocksDisplayedInTheNextBlocksArea; i++) {
-            const allBlockPointer = (playerLevelEnvironment[0].blockCounter + i + 1) % gameLevelEnvironment.numberOfBlocksInAllBlocks;
+            const allBlockPointer = (playerLevelEnvironment[currentPlayer].blockCounter + i + 1) % gameLevelEnvironment.numberOfBlocksInAllBlocks;
             const blockToDrawIndex = gameLevelEnvironment.allBlocks[allBlockPointer];
             const blockToDrawRotation = 0;
             const xModifierInSquares = ((gameLevelEnvironment.numberOfBlocksDisplayedInTheNextBlocksArea - 1) * 5) - (i * 5);
@@ -559,30 +561,30 @@ socket.on('serverEvent', function(serverEvent, playerId){
             const drawEmptyLines = false;
             const blockMapToDraw = blockMap[blockToDrawIndex][blockToDrawRotation][blockToDrawRotation];
             const blockToDrawColor = colorRelated.getBlockColor(blockToDrawIndex);
-            drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[0].playAreaMode, playerLevelEnvironment[0].fullLines, playerLevelEnvironment[0].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[0].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
+            drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[currentPlayer].playAreaMode, playerLevelEnvironment[currentPlayer].fullLines, playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
         }
     }
 
 
-    // this function saves the block that has completed its journey to playerLevelEnvironment[0].listOfBlocksInThePlayingArea
+    // this function saves the block that has completed its journey to playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
 
     function saveDoneBlock() {
 
         let blockAlreadyInserted = false;
-        for (let i = 0; i < playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length; i++) {
-            if (playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockCounter === playerLevelEnvironment[0].blockCounter) {
+        for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
+            if (playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockCounter === playerLevelEnvironment[currentPlayer].blockCounter) {
                 blockAlreadyInserted = true;
             }
         }
 
         if (blockAlreadyInserted === false) {
             try {
-                playerLevelEnvironment[0].listOfBlocksInThePlayingArea.push({
-                    blockMap: blockMap[playerLevelEnvironment[0].blockIndex][playerLevelEnvironment[0].rotationIndex][playerLevelEnvironment[0].rotationIndex],
-                    blockIndex: playerLevelEnvironment[0].blockIndex,
-                    blockX: Math.floor(playerLevelEnvironment[0].xPlayArea / gameLevelEnvironment.pixelSize),
-                    blockY: Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize) - 1,
-                    blockCounter: playerLevelEnvironment[0].blockCounter,
+                playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.push({
+                    blockMap: blockMap[playerLevelEnvironment[currentPlayer].blockIndex][playerLevelEnvironment[currentPlayer].rotationIndex][playerLevelEnvironment[currentPlayer].rotationIndex],
+                    blockIndex: playerLevelEnvironment[currentPlayer].blockIndex,
+                    blockX: Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize),
+                    blockY: Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) - 1,
+                    blockCounter: playerLevelEnvironment[currentPlayer].blockCounter,
                     wasChecked: false
                 });
             } catch(error) {
@@ -612,19 +614,19 @@ socket.on('serverEvent', function(serverEvent, playerId){
         const ctx = c.getContext("2d");
         ctx.clearRect(0, 0, c.width, c.height);
 
-        // go thru the blocks one by one in playerLevelEnvironment[0].listOfBlocksInThePlayingArea
+        // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
         let isRectangleFilled;
-        for (let i = 0; i < playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length; i++) {
-            const blockMapNumberOfRows = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap).length;
-            const blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
+        for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
+            const blockMapNumberOfRows = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap).length;
+            const blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
             for (y = 0; y < blockMapNumberOfRows; y++) {
                 for (x = 0; x < blockMapNumberOfColumns; x++) {
-                    isRectangleFilled = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                    isRectangleFilled = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                     if (isRectangleFilled === 1) {
                         // copy the map of the block to currentGravityCalculationArea
-                        const yOnGravityCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY + y;
-                        const xOnGravityCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockX + x;
-                        let colorOnGravityCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockIndex + 1;
+                        const yOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + y;
+                        const xOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX + x;
+                        let colorOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex + 1;
                         currentGravityCalculationArea[yOnGravityCalculationArea][xOnGravityCalculationArea] = colorOnGravityCalculationArea;
                     }
                 }
@@ -633,7 +635,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
     }
 
 
-    // this function modifies blocks in the playerLevelEnvironment[0].listOfBlocksInThePlayingArea in case there was a full line
+    // this function modifies blocks in the playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea in case there was a full line
 
     function modifyListOfBlocksInThePlayingAreaBecauseOfFullLine(fullLineIndex) {
 
@@ -641,23 +643,23 @@ socket.on('serverEvent', function(serverEvent, playerId){
         let x;
         let y;
 
-        // go thru the blocks one by one in playerLevelEnvironment[0].listOfBlocksInThePlayingArea
+        // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
         // (we iterate backwards, so when we remove an item reindexing the array will not break the loop)
         let blockIsAffected;
         let isRectangleFilled;
         let lineAffected;
         let thereWerePixelsAboveTheCut;
         let thereWerePixelsUnderTheCut;
-        for (let i = playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length - 1; i >= 0; i--) {
+        for (let i = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length - 1; i >= 0; i--) {
             blockIsAffected = false;
-            playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].wasChecked = true;
-            const blockMapNumberOfRows = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap).length;
-            const blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
+            playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].wasChecked = true;
+            const blockMapNumberOfRows = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap).length;
+            const blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
             for (y = 0; y < blockMapNumberOfRows; y++) {
                 for (x = 0; x < blockMapNumberOfColumns; x++) {
-                    isRectangleFilled = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                    isRectangleFilled = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                     if (isRectangleFilled === 1) {
-                        if (fullLineIndex === (playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY + y)) {
+                        if (fullLineIndex === (playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + y)) {
                             // the y coordinate of the pixel matches the full line row number
                             blockIsAffected = true;
                             lineAffected = y;
@@ -672,7 +674,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 thereWerePixelsAboveTheCut = false;
                 for (y = 0; y < lineAffected; y++) {
                     for (x = 0; x < blockMapNumberOfColumns; x++) {
-                        isRectangleFilled = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                        isRectangleFilled = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                         if (isRectangleFilled === 1) {
                             thereWerePixelsAboveTheCut = true;
                         }
@@ -686,23 +688,23 @@ socket.on('serverEvent', function(serverEvent, playerId){
                             newBlockMap[y][x] = 0;
                         }
                     }
-                    playerLevelEnvironment[0].listOfBlocksInThePlayingArea.push({
+                    playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.push({
                         blockMap: newBlockMap,
-                        blockIndex: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockIndex,
-                        blockX: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockX,
-                        blockY: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY,
-                        blockCounter: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockCounter
+                        blockIndex: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex,
+                        blockX: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX,
+                        blockY: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY,
+                        blockCounter: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockCounter
                     });
                     for (y = 0; y < lineAffected; y++) {
                         for (x = 0; x < blockMapNumberOfColumns; x++) {
-                            playerLevelEnvironment[0].listOfBlocksInThePlayingArea[playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length - 1].blockMap[y][x] = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                            playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length - 1].blockMap[y][x] = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                         }
                     }
                 }
                 thereWerePixelsUnderTheCut = false;
                 for (y = lineAffected + 1; y < blockMapNumberOfRows; y++) {
                     for (x = 0; x < blockMapNumberOfColumns; x++) {
-                        isRectangleFilled = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                        isRectangleFilled = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                         if (isRectangleFilled === 1) {
                             thereWerePixelsUnderTheCut = true;
                         }
@@ -716,21 +718,21 @@ socket.on('serverEvent', function(serverEvent, playerId){
                             newBlockMap[y - (lineAffected + 1)][x] = 0;
                         }
                     }
-                    playerLevelEnvironment[0].listOfBlocksInThePlayingArea.push({
+                    playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.push({
                         blockMap: newBlockMap,
-                        blockIndex: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockIndex,
-                        blockX: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockX,
-                        blockY: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY + lineAffected + 1,
-                        blockCounter: playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockCounter
+                        blockIndex: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex,
+                        blockX: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX,
+                        blockY: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + lineAffected + 1,
+                        blockCounter: playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockCounter
                     });
                     for (y = lineAffected + 1; y < blockMapNumberOfRows; y++) {
                         for (x = 0; x < blockMapNumberOfColumns; x++) {
-                            playerLevelEnvironment[0].listOfBlocksInThePlayingArea[playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length - 1].blockMap[y - (lineAffected + 1)][x] = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                            playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length - 1].blockMap[y - (lineAffected + 1)][x] = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                         }
                     }
                 }
                 // remove the old item from the list
-                playerLevelEnvironment[0].listOfBlocksInThePlayingArea.splice(i, 1);
+                playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.splice(i, 1);
             }
         }
     }
@@ -745,11 +747,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
         let x;
         let y;
         let thereWasMovementInThisRound = false;
-        playerLevelEnvironment[0].listOfBlocksThatCanBeMoved = [];
+        playerLevelEnvironment[currentPlayer].listOfBlocksThatCanBeMoved = [];
 
-        // let's iterate thru all the blocks we have in playerLevelEnvironment[0].listOfBlocksInThePlayingArea
+        // let's iterate thru all the blocks we have in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
         let isRectangleFilled;
-        for (let i = 0; i < playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length; i++) {
+        for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
 
             // clear currentGravityCalculationArea
             let numberOfRows = currentGravityCalculationArea.length;
@@ -762,19 +764,19 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
             // calculate currentGravityCalculationArea, without the current block
 
-            // go thru the blocks one by one in playerLevelEnvironment[0].listOfBlocksInThePlayingArea
+            // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
             // draw every block except the one we calculate now
-            for (let k = 0; k < playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length; k++) {
+            for (let k = 0; k < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; k++) {
                 if (k !== i) {
-                    blockMapNumberOfRows = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[k].blockMap).length;
-                    blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[k].blockMap[0]).length;
+                    blockMapNumberOfRows = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockMap).length;
+                    blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockMap[0]).length;
                     for (y = 0; y < blockMapNumberOfRows; y++) {
                         for (x = 0; x < blockMapNumberOfColumns; x++) {
-                            isRectangleFilled = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[k].blockMap[y][x];
+                            isRectangleFilled = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockMap[y][x];
                             if (isRectangleFilled === 1) {
-                                const yOnGravityCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[k].blockY + y;
-                                const xOnGravityCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[k].blockX + x;
-                                const colorOnGravityCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[k].blockIndex + 1;
+                                const yOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockY + y;
+                                const xOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockX + x;
+                                const colorOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockIndex + 1;
                                 currentGravityCalculationArea[yOnGravityCalculationArea][xOnGravityCalculationArea] = colorOnGravityCalculationArea;
                             }
                         }
@@ -796,15 +798,15 @@ socket.on('serverEvent', function(serverEvent, playerId){
             let blockCanBeMoved = true;
             const yModifier = 0;
             numberOfRows = currentGravityCalculationArea.length;
-            blockMapNumberOfRows = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap).length;
-            blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
+            blockMapNumberOfRows = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap).length;
+            blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
 
             for (y = 0; y < blockMapNumberOfRows; y++) {
                 for (x = 0; x < blockMapNumberOfColumns; x++) {
-                    isRectangleFilled = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap[y][x];
+                    isRectangleFilled = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[y][x];
                     if (isRectangleFilled === 1) {
-                        const yOnCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY + y + yModifier + 1;
-                        const xOnCalculationArea = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockX + x;
+                        const yOnCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + y + yModifier + 1;
+                        const xOnCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX + x;
                         if (yOnCalculationArea > (numberOfRows - 2)) {
                             // block reached the bottom
                             blockCanBeMoved = false;
@@ -821,7 +823,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 }
             }
             if (blockCanBeMoved === true) {
-                playerLevelEnvironment[0].listOfBlocksThatCanBeMoved.push(i);
+                playerLevelEnvironment[currentPlayer].listOfBlocksThatCanBeMoved.push(i);
                 thereWasMovementInThisRound = true;
             } else {
                 // block could not be moved
@@ -856,21 +858,21 @@ socket.on('serverEvent', function(serverEvent, playerId){
         const ctx = c.getContext("2d");
         ctx.clearRect(0, 0, c.width, c.height);
 
-        // go thru the blocks one by one in playerLevelEnvironment[0].listOfBlocksInThePlayingArea
+        // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
         let yModifierInPixels;
-        for (let i = 0; i < playerLevelEnvironment[0].listOfBlocksInThePlayingArea.length; i++) {
+        for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
 
-            const xModifierInSquares = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockX;
-            const yModifierInSquares = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockY + 1;
+            const xModifierInSquares = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX;
+            const yModifierInSquares = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + 1;
             const drawEmptyLines = true;
-            const blockMapToDraw = playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockMap;
-            const blockToDrawColor = colorRelated.getBlockColor(playerLevelEnvironment[0].listOfBlocksInThePlayingArea[i].blockIndex);
-            if (playerLevelEnvironment[0].listOfBlocksThatCanBeMoved.includes(i)) {
-                yModifierInPixels = playerLevelEnvironment[0].gravityAnimationYModifier;
+            const blockMapToDraw = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap;
+            const blockToDrawColor = colorRelated.getBlockColor(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex);
+            if (playerLevelEnvironment[currentPlayer].listOfBlocksThatCanBeMoved.includes(i)) {
+                yModifierInPixels = playerLevelEnvironment[currentPlayer].gravityAnimationYModifier;
             } else {
                 yModifierInPixels = 0;
             }
-            drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[0].playAreaMode, playerLevelEnvironment[0].fullLines, playerLevelEnvironment[0].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[0].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
+            drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[currentPlayer].playAreaMode, playerLevelEnvironment[currentPlayer].fullLines, playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
         }
     }
 
@@ -883,24 +885,24 @@ socket.on('serverEvent', function(serverEvent, playerId){
         checkFullLineInCurrentCalculationArea();
 
         // if we need to set a new block, save the old one and set a new one
-        if (playerLevelEnvironment[0].selectANewBlockNextFrame === true) {
+        if (playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame === true) {
 
             // save old one
             saveDoneBlock();
 
             // select a new one
             blockGenerator.selectANewBlock();
-            playerLevelEnvironment[0].selectANewBlockNextFrame = false;
+            playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = false;
         }
 
         // let's move the current block down
 
         // y previously in the calculationArea
-        let previousYCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize);
+        let previousYCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize);
         // y in the playArea
-        playerLevelEnvironment[0].yPlayArea = playerLevelEnvironment[0].yPlayArea + playerLevelEnvironment[0].fallingSpeed;
+        playerLevelEnvironment[currentPlayer].yPlayArea = playerLevelEnvironment[currentPlayer].yPlayArea + playerLevelEnvironment[currentPlayer].fallingSpeed;
         // y now in the calculationArea
-        let currentYCalculationArea = Math.floor(playerLevelEnvironment[0].yPlayArea / gameLevelEnvironment.pixelSize);
+        let currentYCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize);
         // do we need to move down the block in the calculationArea
         if (previousYCalculationArea !== currentYCalculationArea) {
             // yes, try to do the move in calculationArea
@@ -911,7 +913,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
         }
 
         // if the current block will be replaced next frame, don't draw the playArea
-        if (playerLevelEnvironment[0].selectANewBlockNextFrame === false) {
+        if (playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame === false) {
             // draw the pixel perfect playArea
             drawPlayAreaWithFallingBlock();
         }
@@ -929,14 +931,14 @@ socket.on('serverEvent', function(serverEvent, playerId){
     function fullLineRemoveRoutine() {
         drawPlayArea();
         if (animateFullLines() === true) {
-            hideFullLines(playerLevelEnvironment[0].fullLines);
+            hideFullLines(playerLevelEnvironment[currentPlayer].fullLines);
 
             // check if any block can fall down
             const isThereABlockThatCanBeMoved = checkIfAnyBlockCanFallDown();
             if (isThereABlockThatCanBeMoved === true) {
-                playerLevelEnvironment[0].playAreaMode = 'gravityAnimation';
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'gravityAnimation';
             } else {
-                playerLevelEnvironment[0].playAreaMode = 'blockFallingAnimation';
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
             }
         }
     }
@@ -946,23 +948,23 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     function gravityAnimationRoutine() {
 
-        playerLevelEnvironment[0].gravityAnimationYModifier = playerLevelEnvironment[0].gravityAnimationYModifier + gameLevelEnvironment.gravityAnimationFallingSpeed;
-        if (playerLevelEnvironment[0].gravityAnimationYModifier < gameLevelEnvironment.pixelSize) {
+        playerLevelEnvironment[currentPlayer].gravityAnimationYModifier = playerLevelEnvironment[currentPlayer].gravityAnimationYModifier + gameLevelEnvironment.gravityAnimationFallingSpeed;
+        if (playerLevelEnvironment[currentPlayer].gravityAnimationYModifier < gameLevelEnvironment.pixelSize) {
             drawPlayAreaWithFallingBlocks();
         } else {
-            for (let i = 0; i < playerLevelEnvironment[0].listOfBlocksThatCanBeMoved.length; i++) {
-                playerLevelEnvironment[0].listOfBlocksInThePlayingArea[playerLevelEnvironment[0].listOfBlocksThatCanBeMoved[i]].blockY++;
+            for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksThatCanBeMoved.length; i++) {
+                playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[playerLevelEnvironment[currentPlayer].listOfBlocksThatCanBeMoved[i]].blockY++;
             }
             calculateCurrentGravityCalculationArea();
             copyCurrentGravityCalculationAreaToCurrentCalculationArea();
 
-            playerLevelEnvironment[0].gravityAnimationYModifier = 0;
+            playerLevelEnvironment[currentPlayer].gravityAnimationYModifier = 0;
 
             const isThereABlockThatCanBeMoved = checkIfAnyBlockCanFallDown();
             if (isThereABlockThatCanBeMoved === true) {
-                playerLevelEnvironment[0].playAreaMode = 'gravityAnimation';
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'gravityAnimation';
             } else {
-                playerLevelEnvironment[0].playAreaMode = 'blockFallingAnimation';
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
             }
 
         }
@@ -984,14 +986,14 @@ socket.on('serverEvent', function(serverEvent, playerId){
         drawNextBlocksArea();
 
         // increase opacity
-        playerLevelEnvironment[0].gameEndFadeAnimationCounter--;
+        playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter--;
 
         // check if everything has faded out properly
-        if (playerLevelEnvironment[0].gameEndFadeAnimationCounter === 20) {
+        if (playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter === 20) {
 
-            playerLevelEnvironment[0].gameEndFadeAnimationCounter = gameLevelEnvironment.gameEndFadeAnimationLength;
+            playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter = gameLevelEnvironment.gameEndFadeAnimationLength;
 
-            statRelated.displayGameEndStats(playerLevelEnvironment[0].blockCounter);
+            statRelated.displayGameEndStats(playerLevelEnvironment[currentPlayer].blockCounter);
 
             // stop the game loop
             gameLevelEnvironment.stopTheGameLoop = true;
@@ -1024,7 +1026,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
             checkPlayerInputFromRecording();
         }
 
-        switch (playerLevelEnvironment[0].playAreaMode) {
+        switch (playerLevelEnvironment[currentPlayer].playAreaMode) {
             case 'blockFallingAnimation':
                 blockFallingRoutine();
                 break;
@@ -1038,8 +1040,8 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 gameEndAnimationRoutine();
         }
 
-        // increase playerLevelEnvironment[0].frameNumber
-        playerLevelEnvironment[0].frameNumber++;
+        // increase playerLevelEnvironment[currentPlayer].frameNumber
+        playerLevelEnvironment[currentPlayer].frameNumber++;
 
         // let's restart the game loop in the next frame
         if (!gameLevelEnvironment.stopTheGameLoop) {
@@ -1055,12 +1057,12 @@ socket.on('serverEvent', function(serverEvent, playerId){
 document.onkeydown = checkKeyboardInput;
 
 // let's generate the first 3 blocks
-playerLevelEnvironment[0].blockIndex = blockGenerator.selectABlockRandomly();
-playerLevelEnvironment[0].nextBlocks.unshift(playerLevelEnvironment[0].blockIndex);
-playerLevelEnvironment[0].blockIndex = blockGenerator.selectABlockRandomly();
-playerLevelEnvironment[0].nextBlocks.unshift(playerLevelEnvironment[0].blockIndex);
-playerLevelEnvironment[0].blockIndex = blockGenerator.selectABlockRandomly();
-playerLevelEnvironment[0].nextBlocks.unshift(playerLevelEnvironment[0].blockIndex);
+playerLevelEnvironment[currentPlayer].blockIndex = blockGenerator.selectABlockRandomly();
+playerLevelEnvironment[currentPlayer].nextBlocks.unshift(playerLevelEnvironment[currentPlayer].blockIndex);
+playerLevelEnvironment[currentPlayer].blockIndex = blockGenerator.selectABlockRandomly();
+playerLevelEnvironment[currentPlayer].nextBlocks.unshift(playerLevelEnvironment[currentPlayer].blockIndex);
+playerLevelEnvironment[currentPlayer].blockIndex = blockGenerator.selectABlockRandomly();
+playerLevelEnvironment[currentPlayer].nextBlocks.unshift(playerLevelEnvironment[currentPlayer].blockIndex);
 
 try {
     if(replayingAGame) {
@@ -1082,8 +1084,8 @@ if (replayingAGame) {
     chat.sayGameStarted();
 }
 
-// set playerLevelEnvironment[0].playAreaMode
-playerLevelEnvironment[0].playAreaMode = 'blockFallingAnimation';
+// set playerLevelEnvironment[currentPlayer].playAreaMode
+playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
 
 // record game start time
 statRelated.setGameStartTime();
