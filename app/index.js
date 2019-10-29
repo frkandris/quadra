@@ -19,7 +19,7 @@ siteConfig.initNconf().then(function() {
 }).then(function() {
 
     /* Start app */
-    var server = require('../app/server').listen(nconf.get('app:APP_PORT'), nconf.get('app:APP_HOST'), function() {
+    const server = require('../app/server').listen(nconf.get('app:APP_PORT'), nconf.get('app:APP_HOST'), function () {
         if (process.env.NODE_ENV === "production") {
             console.log(moment().format('YYYY-MM-DD HH:mm:ss') + " | APP | " + nconf.get('app:APP_NAME') + " is running.");
         } else {
@@ -29,7 +29,7 @@ siteConfig.initNconf().then(function() {
     const io = require('socket.io').listen(server);
 
     io.on('connection', function(socket){
-        console.log('a user connected');
+        console.log('user connected');
         socket.on('disconnect', function(){
             console.log('user disconnected');
         });

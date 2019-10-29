@@ -1,26 +1,22 @@
 const gameLevelEnvironment = require('./includes/gameLevelEnvironment');
-const playerLevelEnvironment = require('./includes/playerLevelEnvironment');
-
 const blockMap = require('./includes/blockMap');
 const colorRelated = require('./includes/colorRelated');
+const statRelated = require('./includes/statRelated');
+const drawBlock = require('./includes/drawBlock');
+const chat = require('./includes/chat');
+const recordGame = require('./includes/recordGame');
+const blockGenerator = require('./includes/blockGenerator');
+
+const numberOfPlayers = 2;
+
+const playerLevelEnvironment = require('./includes/playerLevelEnvironment');
 
 const calculationAreaDefinitions = require('./includes/calculationAreaDefinitions');
 const currentCalculationArea = calculationAreaDefinitions.currentCalculationArea;
 const tempCalculationArea = calculationAreaDefinitions.tempCalculationArea;
 const currentGravityCalculationArea = calculationAreaDefinitions.currentGravityCalculationArea;
 
-const statRelated = require('./includes/statRelated');
-
-const drawBlock = require('./includes/drawBlock');
-
-const chat = require('./includes/chat');
-
-const recordGame = require('./includes/recordGame');
-
-const blockGenerator = require('./includes/blockGenerator');
-
 const socket = io();
-
 
 function sendGameEvent(eventValue) {
     socket.emit('clientEvent', eventValue, playerLevelEnvironment.playerId);
@@ -306,7 +302,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         let x;
         let y;
-        const c = document.getElementById("playAreaCanvas");
+        const c = document.getElementById("playAreaCanvas[0]");
         const ctx = c.getContext("2d");
 
         ctx.clearRect(0, 0, c.width, c.height);
@@ -383,7 +379,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
     function drawPlayArea() {
 
         // get the canvas
-        const c = document.getElementById("playAreaCanvas");
+        const c = document.getElementById("playAreaCanvas[0]");
         const ctx = c.getContext("2d");
 
         // clear the canvas
@@ -524,7 +520,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
         while (shadowCanBeMoved === true);
 
         // let's draw the block
-        const c = document.getElementById("playAreaCanvas");
+        const c = document.getElementById("playAreaCanvas[0]");
         const ctx = c.getContext("2d");
 
         const xModifierInSquares = Math.floor(playerLevelEnvironment.xPlayArea / gameLevelEnvironment.pixelSize);
@@ -545,7 +541,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
     function drawNextBlocksArea() {
 
         // let's draw the block
-        const c = document.getElementById("nextBlocksAreaCanvas");
+        const c = document.getElementById("nextBlocksAreaCanvas[0]");
         const ctx = c.getContext("2d");
         ctx.clearRect(0, 0, c.width, c.height);
 
@@ -608,7 +604,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
         }
 
         // clear the canvas
-        const c = document.getElementById("currentGravityCalculationAreaCanvas");
+        const c = document.getElementById("currentGravityCalculationAreaCanvas[0]");
         const ctx = c.getContext("2d");
         ctx.clearRect(0, 0, c.width, c.height);
 
@@ -852,7 +848,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
     function drawPlayAreaWithFallingBlocks() {
 
         // clear the canvas
-        const c = document.getElementById("playAreaCanvas");
+        const c = document.getElementById("playAreaCanvas[0]");
         const ctx = c.getContext("2d");
         ctx.clearRect(0, 0, c.width, c.height);
 
