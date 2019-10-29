@@ -2,8 +2,17 @@ const gameLevelEnvironment = require('./includes/gameLevelEnvironment');
 
 const numberOfPlayers = 2;
 let playerLevelEnvironment = [];
+let calculationAreaDefinitions = [];
+let currentCalculationArea = [];
+let tempCalculationArea = [];
+let currentGravityCalculationArea = [];
 for (let i = 0; i < numberOfPlayers; i++) {
     playerLevelEnvironment[i] = require('./includes/playerLevelEnvironment');
+
+    calculationAreaDefinitions[i] = require('./includes/calculationAreaDefinitions');
+    currentCalculationArea[i] = calculationAreaDefinitions[i].currentCalculationArea;
+    tempCalculationArea[i] = calculationAreaDefinitions[i].tempCalculationArea;
+    currentGravityCalculationArea[i] = calculationAreaDefinitions[i].currentGravityCalculationArea;
 }
 
 const currentPlayer = 0;
@@ -15,12 +24,6 @@ const drawBlock = require('./includes/drawBlock');
 const chat = require('./includes/chat');
 const recordGame = require('./includes/recordGame');
 const blockGenerator = require('./includes/blockGenerator');
-
-
-const calculationAreaDefinitions = require('./includes/calculationAreaDefinitions');
-const currentCalculationArea = calculationAreaDefinitions.currentCalculationArea;
-const tempCalculationArea = calculationAreaDefinitions.tempCalculationArea;
-const currentGravityCalculationArea = calculationAreaDefinitions.currentGravityCalculationArea;
 
 const socket = io();
 
@@ -164,11 +167,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // 1.0. copy currentCalculationArea to tempCalculationArea
 
-        const numberOfRows = currentCalculationArea.length;
-        const numberOfColumns = currentCalculationArea[0].length;
+        const numberOfRows = currentCalculationArea[currentPlayer].length;
+        const numberOfColumns = currentCalculationArea[currentPlayer][0].length;
         for (let y = 0; y < numberOfRows; y++) {
             for (let x = 0; x < numberOfColumns; x++) {
-                tempCalculationArea[y][x] = currentCalculationArea[y][x];
+                tempCalculationArea[currentPlayer][y][x] = currentCalculationArea[currentPlayer][y][x];
             }
         }
 
@@ -190,7 +193,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 if (isRectangleFilled === 1) {
                     yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y + yCalculationAreaModifier;
                     xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x + xCalculationAreaModifier;
-                    tempCalculationArea[yOnCalculationArea][xOnCalculationArea] = 0;
+                    tempCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] = 0;
                 }
             }
         }
@@ -218,7 +221,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                         playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = true;
                         playerLevelEnvironment[currentPlayer].moveCanBeDone = false;
                     }
-                    if (tempCalculationArea[yOnCalculationArea][xOnCalculationArea] !== 0) {
+                    if (tempCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] !== 0) {
                         // move can not be done, as the block in the new position would overlap with something
                         playerLevelEnvironment[currentPlayer].moveCanBeDone = false;
                     }
@@ -246,7 +249,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                     if (isRectangleFilled === 1) {
                         yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y + yCalculationAreaModifier;
                         xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x + xCalculationAreaModifier;
-                        currentCalculationArea[yOnCalculationArea][xOnCalculationArea] = 0;
+                        currentCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] = 0;
                     }
                 }
             }
@@ -268,7 +271,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                     if (isRectangleFilled === 1) {
                         yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y;
                         xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
-                        currentCalculationArea[yOnCalculationArea][xOnCalculationArea] = playerLevelEnvironment[currentPlayer].blockIndex+1;
+                        currentCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] = playerLevelEnvironment[currentPlayer].blockIndex+1;
                     }
                 }
             }
@@ -315,11 +318,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // copy currentCalculationArea to tempCalculationArea
 
-        const numberOfRows = currentCalculationArea.length;
-        const numberOfColumns = currentCalculationArea[0].length;
+        const numberOfRows = currentCalculationArea[currentPlayer].length;
+        const numberOfColumns = currentCalculationArea[currentPlayer][0].length;
         for (y = 0; y < numberOfRows; y++) {
             for (x = 0; x < numberOfColumns; x++) {
-                tempCalculationArea[y][x] = currentCalculationArea[y][x];
+                tempCalculationArea[currentPlayer][y][x] = currentCalculationArea[currentPlayer][y][x];
             }
         }
 
@@ -334,7 +337,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                 if (isRectangleFilled === 1) {
                     const yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y;
                     const xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
-                    tempCalculationArea[yOnCalculationArea][xOnCalculationArea] = 0;
+                    tempCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] = 0;
                 }
             }
         }
@@ -404,8 +407,8 @@ socket.on('serverEvent', function(serverEvent, playerId){
         playerLevelEnvironment[currentPlayer].fullLines = [];
         let fullLineFound = false;
 
-        const numberOfRows = currentCalculationArea.length;
-        const numberOfColumns = currentCalculationArea[0].length;
+        const numberOfRows = currentCalculationArea[currentPlayer].length;
+        const numberOfColumns = currentCalculationArea[currentPlayer][0].length;
 
         // let's check all rows for full lines
         let numberOfFilledRectanglesInRow;
@@ -413,7 +416,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
         for (let i = 0; i < numberOfRows; i++) {
             numberOfFilledRectanglesInRow = 0;
             for (let j = 0; j < numberOfColumns; j++) {
-                isRectangleFilled = currentCalculationArea[i][j];
+                isRectangleFilled = currentCalculationArea[currentPlayer][i][j];
                 if (isRectangleFilled > 0) {
                     numberOfFilledRectanglesInRow++;
                 }
@@ -463,7 +466,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     function hideFullLines(fullLines) {
 
-        const numberOfColumns = currentCalculationArea[0].length;
+        const numberOfColumns = currentCalculationArea[currentPlayer][0].length;
 
         let fullLine;
         for (let p = 0; p < fullLines.length; p++) {
@@ -473,13 +476,13 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
             // remove it
             for (l = 0; l < numberOfColumns; l++) {
-                currentCalculationArea[fullLine][l] = 0;
-                currentCalculationArea[0][l] = 0;
+                currentCalculationArea[currentPlayer][fullLine][l] = 0;
+                currentCalculationArea[currentPlayer][0][l] = 0;
             }
             // move everything above the line 1 row down
             for (let k = fullLine; k > 0; k--) {
                 for (l = 0; l < numberOfColumns; l++) {
-                    currentCalculationArea[k][l] = currentCalculationArea[k - 1][l];
+                    currentCalculationArea[currentPlayer][k][l] = currentCalculationArea[currentPlayer][k - 1][l];
                 }
             }
 
@@ -498,7 +501,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
         // let's try to move the block downwards and look for overlap
 
-        const numberOfRows = currentCalculationArea.length;
+        const numberOfRows = currentCalculationArea[currentPlayer].length;
         let shadowCanBeMoved;
         let yModifier = 0;
         let isRectangleFilled;
@@ -515,7 +518,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                         if (yOnCalculationArea > (numberOfRows - 2)) {
                             shadowCanBeMoved = false;
                         }
-                        if (tempCalculationArea[yOnCalculationArea][xOnCalculationArea] !== 0) {
+                        if (tempCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] !== 0) {
                             shadowCanBeMoved = false;
                         }
                     }
@@ -601,11 +604,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
         let y;
 
         // clear currentGravityCalculationArea
-        const numberOfRows = currentGravityCalculationArea.length;
-        const numberOfColumns = currentGravityCalculationArea[0].length;
+        const numberOfRows = currentGravityCalculationArea[currentPlayer].length;
+        const numberOfColumns = currentGravityCalculationArea[currentPlayer][0].length;
         for (y = 0; y < numberOfRows; y++) {
             for (x = 0; x < numberOfColumns; x++) {
-                currentGravityCalculationArea[y][x] = 0;
+                currentGravityCalculationArea[currentPlayer][y][x] = 0;
             }
         }
 
@@ -627,7 +630,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                         const yOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + y;
                         const xOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX + x;
                         let colorOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex + 1;
-                        currentGravityCalculationArea[yOnGravityCalculationArea][xOnGravityCalculationArea] = colorOnGravityCalculationArea;
+                        currentGravityCalculationArea[currentPlayer][yOnGravityCalculationArea][xOnGravityCalculationArea] = colorOnGravityCalculationArea;
                     }
                 }
             }
@@ -754,11 +757,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
         for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
 
             // clear currentGravityCalculationArea
-            let numberOfRows = currentGravityCalculationArea.length;
-            let numberOfColumns = currentGravityCalculationArea[0].length;
+            let numberOfRows = currentGravityCalculationArea[currentPlayer].length;
+            let numberOfColumns = currentGravityCalculationArea[currentPlayer][0].length;
             for (y = 0; y < numberOfRows; y++) {
                 for (x = 0; x < numberOfColumns; x++) {
-                    currentGravityCalculationArea[y][x] = 0;
+                    currentGravityCalculationArea[currentPlayer][y][x] = 0;
                 }
             }
 
@@ -777,7 +780,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                                 const yOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockY + y;
                                 const xOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockX + x;
                                 const colorOnGravityCalculationArea = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockIndex + 1;
-                                currentGravityCalculationArea[yOnGravityCalculationArea][xOnGravityCalculationArea] = colorOnGravityCalculationArea;
+                                currentGravityCalculationArea[currentPlayer][yOnGravityCalculationArea][xOnGravityCalculationArea] = colorOnGravityCalculationArea;
                             }
                         }
                     }
@@ -786,18 +789,18 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
             // let's try to move the block downwards and look for overlap
 
-            numberOfRows = currentGravityCalculationArea.length;
-            numberOfColumns = currentGravityCalculationArea[0].length;
+            numberOfRows = currentGravityCalculationArea[currentPlayer].length;
+            numberOfColumns = currentGravityCalculationArea[currentPlayer][0].length;
             for (y = 0; y < numberOfRows; y++) {
                 let line = '';
                 for (x = 0; x < numberOfColumns; x++) {
-                    line = line + currentGravityCalculationArea[y][x];
+                    line = line + currentGravityCalculationArea[currentPlayer][y][x];
                 }
             }
 
             let blockCanBeMoved = true;
             const yModifier = 0;
-            numberOfRows = currentGravityCalculationArea.length;
+            numberOfRows = currentGravityCalculationArea[currentPlayer].length;
             blockMapNumberOfRows = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap).length;
             blockMapNumberOfColumns = Object.keys(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap[0]).length;
 
@@ -812,7 +815,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
                             blockCanBeMoved = false;
                             break;
                         }
-                        if (currentGravityCalculationArea[yOnCalculationArea][xOnCalculationArea] !== 0) {
+                        if (currentGravityCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] !== 0) {
                             // block collided with another block
                             blockCanBeMoved = false;
                         }
@@ -839,11 +842,11 @@ socket.on('serverEvent', function(serverEvent, playerId){
     // this function copies the currentGravityCalculationArea to currentCalculationArea
 
     function copyCurrentGravityCalculationAreaToCurrentCalculationArea() {
-        const numberOfRows = currentGravityCalculationArea.length;
-        const numberOfColumns = currentGravityCalculationArea[0].length;
+        const numberOfRows = currentGravityCalculationArea[currentPlayer].length;
+        const numberOfColumns = currentGravityCalculationArea[currentPlayer][0].length;
         for (let y = 0; y < numberOfRows; y++) {
             for (let x = 0; x < numberOfColumns; x++) {
-                currentCalculationArea[y][x] = currentGravityCalculationArea[y][x];
+                currentCalculationArea[currentPlayer][y][x] = currentGravityCalculationArea[currentPlayer][y][x];
             }
         }
     }

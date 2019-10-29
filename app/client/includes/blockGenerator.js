@@ -2,14 +2,15 @@ const gameLevelEnvironment = require('./gameLevelEnvironment');
 
 const numberOfPlayers = 2;
 let playerLevelEnvironment = [];
+let calculationAreaDefinitions = [];
 for (let i = 0; i < numberOfPlayers; i++) {
     playerLevelEnvironment[i] = require('./playerLevelEnvironment');
+    calculationAreaDefinitions[i] = require('./calculationAreaDefinitions');
 }
 const currentPlayer = 0;
 
 const statRelated = require('./statRelated');
 const blockMap = require('./blockMap');
-const calculationAreaDefinitions = require('./calculationAreaDefinitions');
 
 
 // this function returns the index of a randomly selected block
@@ -70,7 +71,7 @@ function checkIfBlockOverlapsAnythingOnACalculationArea() {
             if (isRectangleFilled === 1) {
                 const yOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].yPlayArea / gameLevelEnvironment.pixelSize) + y;
                 const xOnCalculationArea = Math.floor(playerLevelEnvironment[currentPlayer].xPlayArea / gameLevelEnvironment.pixelSize) + x;
-                if (calculationAreaDefinitions.currentCalculationArea[yOnCalculationArea][xOnCalculationArea] !== 0) {
+                if (calculationAreaDefinitions[currentPlayer].currentCalculationArea[yOnCalculationArea][xOnCalculationArea] !== 0) {
                     // move can not be done, as the block in the new position would overlap with something
                     moveCanBeDone = false;
                 }
