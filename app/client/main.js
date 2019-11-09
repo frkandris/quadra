@@ -32,7 +32,9 @@ function sendGameEvent(eventValue) {
 }
 socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayingArea){
     console.log('serverEvent', serverEvent, playerId);
-    drawSecondPlayerArea(listOfBlocksInThePlayingArea);
+    if (playerId !== playerLevelEnvironment[currentPlayer].playerId) {
+        drawSecondPlayerArea(listOfBlocksInThePlayingArea);
+    }
 });
 
     // this function gets called if there was a keyboard event
@@ -364,7 +366,7 @@ socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayin
     }
 
 
-    // this function draws all blocks one by one to the playArea
+    // this function clears and draws all blocks one by one to the playArea
 
     function drawAllBlocksToPlayArea(ctx, blockList) {
 
@@ -409,7 +411,8 @@ socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayin
         const c = document.getElementById("playAreaCanvas[1]");
         const ctx = c.getContext("2d");
 
-        console.log("listOfBlocksInThePlayingArea.length", listOfBlocksInThePlayingArea.length);
+        // clear the canvas
+        ctx.clearRect(0, 0, c.width, c.height);
 
         if (listOfBlocksInThePlayingArea.length > 0) {
             drawAllBlocksToPlayArea(ctx, listOfBlocksInThePlayingArea);
@@ -1063,6 +1066,11 @@ socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayin
 
         // increase playerLevelEnvironment[currentPlayer].frameNumber
         playerLevelEnvironment[currentPlayer].frameNumber++;
+
+        // send an update to the server every x frames
+        if(playerLevelEnvironment[currentPlayer].frameNumber % gameLevelEnvironment.frequencyOfServerUpdatesInFrames == 0) {
+            sendGameEvent('update');
+        }
 
         // let's restart the game loop in the next frame
         if (!gameLevelEnvironment.stopTheGameLoop) {

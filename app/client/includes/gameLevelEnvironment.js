@@ -16,6 +16,8 @@ let allBlocks = []; // we store all blocks generated in the beginning of the gam
 
 const numberOfBlocksDisplayedInTheNextBlocksArea = 3; // number Of Blocks Displayed In The Next Blocks Area
 
+const frequencyOfServerUpdatesInFrames = 60;
+
 module.exports = {
     pixelSize,
     playAreaWidth,
@@ -26,5 +28,6 @@ module.exports = {
     stopTheGameLoop,
     numberOfBlocksInAllBlocks,
     allBlocks,
-    numberOfBlocksDisplayedInTheNextBlocksArea
+    numberOfBlocksDisplayedInTheNextBlocksArea,
+    frequencyOfServerUpdatesInFrames
 };

@@ -34,7 +34,7 @@ siteConfig.initNconf().then(function() {
             console.log('user disconnected');
         });
         socket.on('clientEvent', function(clientEvent, playerId, listOfBlocksInThePlayingArea){
-            console.log('clientEvent', clientEvent, playerId, listOfBlocksInThePlayingArea);
+            console.log('clientEvent', clientEvent, playerId);
             io.emit('serverEvent', clientEvent, playerId, listOfBlocksInThePlayingArea);
         });
     });
