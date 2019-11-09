@@ -28,10 +28,11 @@ const blockGenerator = require('./includes/blockGenerator');
 const socket = io();
 
 function sendGameEvent(eventValue) {
-    socket.emit('clientEvent', eventValue, playerLevelEnvironment[currentPlayer].playerId);
+    socket.emit('clientEvent', eventValue, playerLevelEnvironment[currentPlayer].playerId, playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
 }
-socket.on('serverEvent', function(serverEvent, playerId){
+socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayingArea){
     console.log('serverEvent', serverEvent, playerId);
+    drawSecondPlayerArea(listOfBlocksInThePlayingArea);
 });
 
     // this function gets called if there was a keyboard event
@@ -342,7 +343,7 @@ socket.on('serverEvent', function(serverEvent, playerId){
             }
         }
 
-        drawAllBlocksToPlayArea(ctx);
+        drawAllBlocksToPlayArea(ctx, playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
 
         // draw a the shadow of the moving block
 
@@ -365,18 +366,18 @@ socket.on('serverEvent', function(serverEvent, playerId){
 
     // this function draws all blocks one by one to the playArea
 
-    function drawAllBlocksToPlayArea(ctx) {
+    function drawAllBlocksToPlayArea(ctx, blockList) {
 
-        // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
-        for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
+        // go thru the blocks one by one in blockList
+        for (let i = 0; i < blockList.length; i++) {
 
             // draw the block
-            const xModifierInSquares = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockX;
-            const yModifierInSquares = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockY + 1;
+            const xModifierInSquares = blockList[i].blockX;
+            const yModifierInSquares = blockList[i].blockY + 1;
             const yModifierInPixels = 0;
             const drawEmptyLines = true;
-            const blockMapToDraw = playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockMap;
-            const blockToDrawColor = colorRelated.getBlockColor(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[i].blockIndex);
+            const blockMapToDraw = blockList[i].blockMap;
+            const blockToDrawColor = colorRelated.getBlockColor(blockList[i].blockIndex);
             drawBlock.drawBlock(ctx, blockMapToDraw, blockToDrawColor, xModifierInSquares, yModifierInSquares, yModifierInPixels, drawEmptyLines, playerLevelEnvironment[currentPlayer].playAreaMode, playerLevelEnvironment[currentPlayer].fullLines, playerLevelEnvironment[currentPlayer].gameEndFadeAnimationCounter, gameLevelEnvironment.gameEndFadeAnimationLength, playerLevelEnvironment[currentPlayer].fullLineFadeAnimationCounter, gameLevelEnvironment.fullLineFadeAnimationLength);
 
         }
@@ -395,7 +396,24 @@ socket.on('serverEvent', function(serverEvent, playerId){
         ctx.clearRect(0, 0, c.width, c.height);
 
         // draw the canvas
-        drawAllBlocksToPlayArea(ctx);
+        drawAllBlocksToPlayArea(ctx, playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
+
+    }
+
+
+    // this function draws another players playArea
+
+    function drawSecondPlayerArea(listOfBlocksInThePlayingArea) {
+
+        // get the canvas
+        const c = document.getElementById("playAreaCanvas[1]");
+        const ctx = c.getContext("2d");
+
+        console.log("listOfBlocksInThePlayingArea.length", listOfBlocksInThePlayingArea.length);
+
+        if (listOfBlocksInThePlayingArea.length > 0) {
+            drawAllBlocksToPlayArea(ctx, listOfBlocksInThePlayingArea);
+        }
 
     }
 
