@@ -29,13 +29,14 @@ siteConfig.initNconf().then(function() {
     const io = require('socket.io').listen(server);
 
     io.on('connection', function(socket){
+        socket.join('some room');
         console.log('user connected');
         socket.on('disconnect', function(){
             console.log('user disconnected');
         });
         socket.on('clientEvent', function(clientEvent, playerId, listOfBlocksInThePlayingArea){
             console.log('clientEvent', clientEvent, playerId);
-            io.emit('serverEvent', clientEvent, playerId, listOfBlocksInThePlayingArea);
+            io.to('some room').emit('serverEvent', clientEvent, playerId, listOfBlocksInThePlayingArea);
         });
     });
 
