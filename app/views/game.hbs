@@ -25,29 +25,27 @@
     </div>
 </div>
 
+<script>
 {{#if gameBlocks}}
-    <script>
-        var replayingAGame = true;
-        var preloadedGameBlocks = [{{#each gameBlocks}}{{this}}, {{/each}}];
-    </script>
+    var replayingAGame = true;
+    var preloadedGameBlocks = [{{#each gameBlocks}}{{this}}, {{/each}}];
 {{/if}}
 {{#if gameString}}
-    <script>
-        var preloadedGameString = [];
-        {{#each gameString}}
-        preloadedGameString.push({
-            frameNumber: {{this.frameNumber}},
-            eventName: '{{this.eventName}}',
-            eventValue: '{{this.eventValue}}'
-        });
-        {{/each}}
-    </script>
+    var preloadedGameString = [];
+    {{#each gameString}}
+    preloadedGameString.push({
+        frameNumber: {{this.frameNumber}},
+        eventName: '{{this.eventName}}',
+        eventValue: '{{this.eventValue}}'
+    });
+    {{/each}}
 {{/if}}
 {{#if roomId}}
-    <script>
-        var roomId = {{roomId}};
-    </script>
+    let multiplayer = true;
+    var roomId = {{roomId}};
+{{else}}
+    let multiplayer = false;
 {{/if}}
-
+</script>
 
 <script src='/javascripts/bundle.js'></script>

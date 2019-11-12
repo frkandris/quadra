@@ -27,15 +27,20 @@ const blockGenerator = require('./includes/blockGenerator');
 
 const socket = io();
 
-function sendGameEvent(eventValue) {
-    socket.emit('clientEvent', eventValue, playerLevelEnvironment[currentPlayer].playerId, playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
+if (multiplayer === true) {
+    socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayingArea){
+        console.log('serverEvent', serverEvent, playerId);
+        if (playerId !== playerLevelEnvironment[currentPlayer].playerId) {
+            drawSecondPlayerArea(listOfBlocksInThePlayingArea);
+        }
+    });
 }
-socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayingArea){
-    console.log('serverEvent', serverEvent, playerId);
-    if (playerId !== playerLevelEnvironment[currentPlayer].playerId) {
-        drawSecondPlayerArea(listOfBlocksInThePlayingArea);
+
+function sendGameEvent(eventValue) {
+    if (multiplayer === true) {
+        socket.emit('clientEvent', eventValue, playerLevelEnvironment[currentPlayer].playerId, playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
     }
-});
+}
 
     // this function gets called if there was a keyboard event
 
