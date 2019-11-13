@@ -644,11 +644,6 @@ function sendGameEvent(eventValue) {
             }
         }
 
-        // clear the canvas
-        const c = document.getElementById("currentGravityCalculationAreaCanvas[0]");
-        const ctx = c.getContext("2d");
-        ctx.clearRect(0, 0, c.width, c.height);
-
         // go thru the blocks one by one in playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
         let isRectangleFilled;
         for (let i = 0; i < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; i++) {
