@@ -26,20 +26,18 @@ siteConfig.initNconf().then(function() {
             console.log("APP | " + nconf.get('app:APP_NAME') + " is running on " + nconf.get('app:APP_URL'));
         }
     });
-    const io = require('socket.io').listen(server);
-
+    io = require('socket.io').listen(server);
     io.on('connection', function(socket){
-        socket.join('some room');
+        socket.join('some-room');
         console.log('user connected');
         socket.on('disconnect', function(){
             console.log('user disconnected');
         });
-        socket.on('clientEvent', function(clientEvent, playerId, listOfBlocksInThePlayingArea){
-            console.log('clientEvent', clientEvent, playerId);
-            io.to('some room').emit('serverEvent', clientEvent, playerId, listOfBlocksInThePlayingArea);
+        socket.on('clientEvent', function(clientEvent, roomId, playerId, listOfBlocksInThePlayingArea){
+            console.log('clientEvent', clientEvent, roomId, playerId);
+            io.to('some-room').emit('serverEvent', clientEvent, roomId, playerId, listOfBlocksInThePlayingArea);
         });
     });
-
 }).catch(function(reason) {
     console.log("APP | FATAL: Error during app loading.", {detailedMessage: reason.stack.substring(0, 512)});
     console.log(moment().format('YYYY-MM-DD HH:mm:ss') + ' | APP | FATAL: Error during app loading.');

@@ -28,17 +28,23 @@ const blockGenerator = require('./includes/blockGenerator');
 const socket = io();
 
 if (multiplayer === true) {
-    socket.on('serverEvent', function(serverEvent, playerId, listOfBlocksInThePlayingArea){
-        console.log('serverEvent', serverEvent, playerId);
-        if (playerId !== playerLevelEnvironment[currentPlayer].playerId) {
-            drawSecondPlayerArea(listOfBlocksInThePlayingArea);
+    socket.on('serverEvent', function(serverEventOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer, listOfBlocksInThePlayingAreaOfOtherPlayer){
+        console.log('serverEvent', serverEventOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer);
+        if ( (playerIdOfOtherPlayer !== playerLevelEnvironment[currentPlayer].playerId) && (roomIdOfOtherPlayer === roomId) ) {
+            drawSecondPlayerArea(listOfBlocksInThePlayingAreaOfOtherPlayer);
         }
     });
 }
 
 function sendGameEvent(eventValue) {
     if (multiplayer === true) {
-        socket.emit('clientEvent', eventValue, playerLevelEnvironment[currentPlayer].playerId, playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
+        socket.emit(
+            'clientEvent', 
+            eventValue, 
+            roomId,
+            playerLevelEnvironment[currentPlayer].playerId, 
+            playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
+        );
     }
 }
 
