@@ -18,6 +18,9 @@ const numberOfBlocksDisplayedInTheNextBlocksArea = 3; // number Of Blocks Displa
 
 const frequencyOfServerUpdatesInFrames = 60;
 
+const gameStartingCountDownCounterInitialValue = 3; // starting value of countdown counter at game start
+const gameStartingCountDownFrameCounterInitialValue = 100; // number of frames needed to modify gameStartingCountDownCounter
+
 module.exports = {
     pixelSize,
     playAreaWidth,
@@ -29,5 +32,7 @@ module.exports = {
     numberOfBlocksInAllBlocks,
     allBlocks,
     numberOfBlocksDisplayedInTheNextBlocksArea,
-    frequencyOfServerUpdatesInFrames
+    frequencyOfServerUpdatesInFrames,
+    gameStartingCountDownCounterInitialValue,
+    gameStartingCountDownFrameCounterInitialValue
 };

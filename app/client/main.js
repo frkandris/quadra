@@ -30,9 +30,19 @@ const socket = io();
 if (multiplayer === true) {
     socket.on('serverEvent', function(serverEventOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer, listOfBlocksInThePlayingAreaOfOtherPlayer){
         console.log('serverEvent', serverEventOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer);
+        
+        // if this is an event from another player, who is in the same room
         if ( (playerIdOfOtherPlayer !== playerLevelEnvironment[currentPlayer].playerId) && (roomIdOfOtherPlayer === roomId) ) {
+
+            // if any of the other players started the game, let's start our game too
+            if (serverEventOfOtherPlayer === 'gameStarted') {
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'gameStartingCountDownAnimation';
+            }
+
+            // draw the canvas of the other player
             drawSecondPlayerArea(listOfBlocksInThePlayingAreaOfOtherPlayer);
         }
+
     });
 }
 
@@ -52,36 +62,48 @@ function sendGameEvent(eventValue) {
 
     function checkKeyboardInput(event) {
 
-        // if there is no saved game being replayed now, handle inputs from the keyboard
-        if(!replayingAGame) {
+        // if we wait to start the game, check SPACE
+        if (playerLevelEnvironment[currentPlayer].playAreaMode == 'waitingForSomeoneToStartTheGame') {
             switch (event.key) {
-                case 'ArrowUp':
-                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'rotateRight');
-                    sendGameEvent('rotateRight');
-                    handlePlayerInput('rotateRight');
-                    break;
-                case 'ArrowDown':
-                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'rotateLeft');
-                    sendGameEvent('rotateLeft');
-                    handlePlayerInput('rotateLeft');
-                    break;
-                case 'ArrowLeft':
-                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'moveLeft');
-                    sendGameEvent('moveLeft');
-                    handlePlayerInput('moveLeft');
-                    break;
-                case 'ArrowRight':
-                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'moveRight');
-                    sendGameEvent('moveRight');
-                    handlePlayerInput('moveRight');
-                    break;
                 case ' ':
-                    recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'instantDrop');
-                    sendGameEvent('instantDrop');
-                    handlePlayerInput('instantDrop');
-                    break;
-                default:
+                    playerLevelEnvironment[currentPlayer].playAreaMode = 'gameStartingCountDownAnimation';
+                    sendGameEvent('gameStarted');
+                default: 
                     return;
+            }
+        } else {
+
+            // if there is no saved game being replayed now, handle inputs from the keyboard
+            if(!replayingAGame) {
+                switch (event.key) {
+                    case 'ArrowUp':
+                        recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'rotateRight');
+                        sendGameEvent('rotateRight');
+                        handlePlayerInput('rotateRight');
+                        break;
+                    case 'ArrowDown':
+                        recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'rotateLeft');
+                        sendGameEvent('rotateLeft');
+                        handlePlayerInput('rotateLeft');
+                        break;
+                    case 'ArrowLeft':
+                        recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'moveLeft');
+                        sendGameEvent('moveLeft');
+                        handlePlayerInput('moveLeft');
+                        break;
+                    case 'ArrowRight':
+                        recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'moveRight');
+                        sendGameEvent('moveRight');
+                        handlePlayerInput('moveRight');
+                        break;
+                    case ' ':
+                        recordGame.saveGameEvent(playerLevelEnvironment[currentPlayer].frameNumber, 'keyPressed', 'instantDrop');
+                        sendGameEvent('instantDrop');
+                        handlePlayerInput('instantDrop');
+                        break;
+                    default:
+                        return;
+                }
             }
         }
         event.preventDefault();
@@ -1048,6 +1070,35 @@ function sendGameEvent(eventValue) {
     }
 
 
+    // this function does the gameStartingCountDownAnimation Routine
+
+    function gameStartingCountDownAnimationRoutine() {
+
+        // no keyboard input
+        document.onkeydown = null;
+
+        // decrease framecounter
+        playerLevelEnvironment[currentPlayer].gameStartingCountDownFrameCounter--;
+
+        if (playerLevelEnvironment[currentPlayer].gameStartingCountDownFrameCounter === 0) {
+
+            // reset framecounter
+            playerLevelEnvironment[currentPlayer].gameStartingCountDownFrameCounter = gameLevelEnvironment.gameStartingCountDownFrameCounterInitialValue;
+
+            // decrease counter
+            playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter--;
+            console.log(playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter);
+
+            if (playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter === -1) {
+                // reset counter
+                playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter = gameLevelEnvironment.gameStartingCountDownCounterInitialValue;
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
+            }
+
+        }
+    }
+
+
     // this is the game loop, it runs every frame
 
     function gameLoop() {
@@ -1068,6 +1119,12 @@ function sendGameEvent(eventValue) {
                 break;
             case 'gameEndFadeOutAnimation':
                 gameEndAnimationRoutine();
+            case 'waitingForSomeoneToStartTheGame':
+                // do nothing
+                break;
+            case 'gameStartingCountDownAnimation':
+                gameStartingCountDownAnimationRoutine();
+                break;
         }
 
         // increase playerLevelEnvironment[currentPlayer].frameNumber
@@ -1120,7 +1177,7 @@ if (replayingAGame) {
 }
 
 // set playerLevelEnvironment[currentPlayer].playAreaMode
-playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
+playerLevelEnvironment[currentPlayer].playAreaMode = 'waitingForSomeoneToStartTheGame';
 
 // record game start time
 statRelated.setGameStartTime();

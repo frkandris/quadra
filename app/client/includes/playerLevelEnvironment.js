@@ -44,6 +44,9 @@ const min = 10000000;
 const max = 99999999;
 playerId = Math.floor(Math.random() * (max - min + 1) + min);
 
+let gameStartingCountDownCounter = gameLevelEnvironment.gameStartingCountDownCounterInitialValue; // starting value of countdown counter at game start
+let gameStartingCountDownFrameCounter = gameLevelEnvironment.gameStartingCountDownFrameCounterInitialValue; // number of frames needed to modify gameStartingCountDownCounter
+
 module.exports = {
     fallingSpeed,
     selectANewBlockNextFrame,
@@ -66,5 +69,7 @@ module.exports = {
     gameLevel,
     points,
     playerName,
-    playerId
+    playerId,
+    gameStartingCountDownCounter,
+    gameStartingCountDownFrameCounter
 };
