@@ -33,9 +33,9 @@ siteConfig.initNconf().then(function() {
         socket.on('disconnect', function(){
             console.log('user disconnected');
         });
-        socket.on('clientEvent', function(clientEvent, roomId, playerId, listOfBlocksInThePlayingArea){
-            console.log('clientEvent', clientEvent, roomId, playerId);
-            io.to('some-room').emit('serverEvent', clientEvent, roomId, playerId, listOfBlocksInThePlayingArea);
+        socket.on('clientEvent', function(clientEventValue, clientEventDetails, roomId, playerId, listOfBlocksInThePlayingArea){
+            console.log('clientEvent', clientEventValue, clientEventDetails, roomId, playerId);
+            io.to('some-room').emit('serverEvent', clientEventValue, clientEventDetails, roomId, playerId, listOfBlocksInThePlayingArea);
         });
     });
 }).catch(function(reason) {

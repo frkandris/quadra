@@ -6,6 +6,7 @@ let calculationAreaDefinitions = [];
 let currentCalculationArea = [];
 let tempCalculationArea = [];
 let currentGravityCalculationArea = [];
+let previousCalculationArea = [];
 for (let i = 0; i < numberOfPlayers; i++) {
     playerLevelEnvironment[i] = require('./includes/playerLevelEnvironment');
 
@@ -13,6 +14,7 @@ for (let i = 0; i < numberOfPlayers; i++) {
     currentCalculationArea[i] = calculationAreaDefinitions[i].currentCalculationArea;
     tempCalculationArea[i] = calculationAreaDefinitions[i].tempCalculationArea;
     currentGravityCalculationArea[i] = calculationAreaDefinitions[i].currentGravityCalculationArea;
+    previousCalculationArea[i] = calculationAreaDefinitions[i].previousCalculationArea;
 }
 
 const currentPlayer = 0;
@@ -28,14 +30,14 @@ const blockGenerator = require('./includes/blockGenerator');
 const socket = io();
 
 if (multiplayer === true) {
-    socket.on('serverEvent', function(serverEventOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer, listOfBlocksInThePlayingAreaOfOtherPlayer){
-        console.log('serverEvent', serverEventOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer);
+    socket.on('serverEvent', function(serverEventValueOfOtherPlayer, serverEventDetailsOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer, listOfBlocksInThePlayingAreaOfOtherPlayer){
+        console.log('serverEvent', serverEventValueOfOtherPlayer, serverEventDetailsOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer);
         
         // if this is an event from another player, who is in the same room
         if ( (playerIdOfOtherPlayer !== playerLevelEnvironment[currentPlayer].playerId) && (roomIdOfOtherPlayer === roomId) ) {
 
             // if any of the other players started the game, let's start our game too
-            if (serverEventOfOtherPlayer === 'gameStarted') {
+            if (serverEventValueOfOtherPlayer === 'gameStarted') {
                 playerLevelEnvironment[currentPlayer].playAreaMode = 'gameStartingCountDownAnimation';
             }
 
@@ -46,11 +48,12 @@ if (multiplayer === true) {
     });
 }
 
-function sendGameEvent(eventValue) {
+function sendGameEvent(eventValue, eventDetails = 0) {
     if (multiplayer === true) {
         socket.emit(
             'clientEvent', 
             eventValue, 
+            eventDetails,
             roomId,
             playerLevelEnvironment[currentPlayer].playerId, 
             playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea
@@ -480,6 +483,9 @@ function sendGameEvent(eventValue) {
                 // we've found a full line in row i
                 fullLineFound = true;
                 playerLevelEnvironment[currentPlayer].fullLines.push(i);
+                // FIXME
+                const fuzzyLine = previousCalculationArea[currentPlayer][i];
+                sendGameEvent('clearedLine', fuzzyLine);
             }
         }
         if (fullLineFound === true) {
@@ -905,6 +911,17 @@ function sendGameEvent(eventValue) {
         }
     }
 
+    // this function copies the currentCalculationArea to previousCalculationArea
+    function copyCurrentCalculationAreaToPreviousCalculationArea() {
+        const numberOfRows = currentCalculationArea[currentPlayer].length;
+        const numberOfColumns = currentCalculationArea[currentPlayer][0].length;
+        for (let y = 0; y < numberOfRows; y++) {
+            for (let x = 0; x < numberOfColumns; x++) {
+                previousCalculationArea[currentPlayer][y][x] = currentCalculationArea[currentPlayer][y][x];
+            }
+        }
+    }
+
 
     // this function draws the currentGravityCalculationField with falling blocks
 
@@ -951,6 +968,9 @@ function sendGameEvent(eventValue) {
             blockGenerator.selectANewBlock();
             playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = false;
         }
+
+        // save current state, so we could use it when we need the pattern of the cleared lines
+        copyCurrentCalculationAreaToPreviousCalculationArea();
 
         // let's move the current block down
 
