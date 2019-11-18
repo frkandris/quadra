@@ -490,13 +490,17 @@ function sendGameEvent(eventValue) {
             playerLevelEnvironment[currentPlayer].points += pointsReceived;
 
             chat.sayPointsReceived(pointsReceived, numberOfNewLinesCleared);
-            if (
-                Math.round(numberOfLinesCleared / gameLevelEnvironment.numberOfLinesNeedsToBeClearedToIncreaseGameSpeed) !==
-                Math.round((numberOfLinesCleared-numberOfNewLinesCleared) / gameLevelEnvironment.numberOfLinesNeedsToBeClearedToIncreaseGameSpeed)
-            ) {
-                playerLevelEnvironment[currentPlayer].gameLevel++;
-                playerLevelEnvironment[currentPlayer].fallingSpeed = playerLevelEnvironment[currentPlayer].fallingSpeed + 0.5;
-                chat.sayLevelIncreased(playerLevelEnvironment[currentPlayer].gameLevel);
+
+            // there is no level increase in multiplayer
+            if (!multiplayer) {
+                if (
+                    Math.round(numberOfLinesCleared / gameLevelEnvironment.numberOfLinesNeedsToBeClearedToIncreaseGameSpeed) !==
+                    Math.round((numberOfLinesCleared-numberOfNewLinesCleared) / gameLevelEnvironment.numberOfLinesNeedsToBeClearedToIncreaseGameSpeed)
+                ) {
+                    playerLevelEnvironment[currentPlayer].gameLevel++;
+                    playerLevelEnvironment[currentPlayer].fallingSpeed = playerLevelEnvironment[currentPlayer].fallingSpeed + 0.5;
+                    chat.sayLevelIncreased(playerLevelEnvironment[currentPlayer].gameLevel);
+                }
             }
         }
     }
