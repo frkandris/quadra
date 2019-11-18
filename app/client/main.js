@@ -68,6 +68,7 @@ function sendGameEvent(eventValue) {
                 case ' ':
                     playerLevelEnvironment[currentPlayer].playAreaMode = 'gameStartingCountDownAnimation';
                     sendGameEvent('gameStarted');
+                    chat.sayGameStartsInSeconds(playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter);
                 default: 
                     return;
             }
@@ -1087,12 +1088,18 @@ function sendGameEvent(eventValue) {
 
             // decrease counter
             playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter--;
-            console.log(playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter);
 
-            if (playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter === -1) {
+            if (playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter === 0) {
                 // reset counter
                 playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter = gameLevelEnvironment.gameStartingCountDownCounterInitialValue;
+                // start game
                 playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
+                // say game started
+                chat.sayGameStarted(playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter);
+                // restore keyboard watcher
+                document.onkeydown = checkKeyboardInput;
+            } else {
+                chat.sayGameStartsInSeconds(playerLevelEnvironment[currentPlayer].gameStartingCountDownCounter);
             }
 
         }
@@ -1172,8 +1179,8 @@ if (replayingAGame) {
 } else {
     // ...otherwise let's create all the blocks for this game
     blockGenerator.generateAllBlocks();
-    // announce in the chatbox that the game has started
-    chat.sayGameStarted();
+    // announce in the chatbox that the game has inicialized
+    chat.sayGameInicialized();
 }
 
 // set playerLevelEnvironment[currentPlayer].playAreaMode

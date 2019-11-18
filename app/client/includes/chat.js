@@ -5,7 +5,8 @@ for (let i = 0; i < numberOfPlayers; i++) {
 }
 const currentPlayer = 0;
 
-const gameStartText = "<span class=text-light>Game started! Good luck " + playerLevelEnvironment[currentPlayer].playerName + "!</span>";
+const gameInitText = "Press <span class=text-light>''Space''</span> to start! Good luck <span class=text-light>" + playerLevelEnvironment[currentPlayer].playerName + "</span>!";
+const gameStartText = "<span class=text-light>Game started!</span>";
 const replayStartText = "<span class=text-light>Replay started!</span>";
 const gameOverText = "<span class=text-light>Game over!</span>";
 const replayOverText = "<span class=text-light>Replay over!</span>";
@@ -26,10 +27,14 @@ function numberWithCommas(x) {
 
 // this function announces, that the game has started
 
+function sayGameInicialized() {
+    saySomething(gameInitText);
+}
+
+
 function sayGameStarted() {
     saySomething(gameStartText);
 }
-
 
 // this function announces, that a replay has started
 
@@ -91,6 +96,10 @@ function sayGameEndStats(numberOfLinesCleared, gameTimeInSeconds, numberOfBlocks
 }
 
 
+function sayGameStartsInSeconds(seconds) {
+    saySomething("Game starts in <span class=text-light>" + seconds + "</span>...");
+}
+
 // this function extends the chat-area div with the texts
 
 function saySomething(something) {
@@ -101,10 +110,12 @@ function saySomething(something) {
 
 module.exports = {
     sayGameStarted,
+    sayGameInicialized,
     sayReplayStarted,
     sayGameOver,
     sayReplayOver,
     sayLevelIncreased,
     sayPointsReceived,
-    sayGameEndStats
+    sayGameEndStats,
+    sayGameStartsInSeconds
 };
