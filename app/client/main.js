@@ -41,6 +41,11 @@ if (multiplayer === true) {
                 playerLevelEnvironment[currentPlayer].playAreaMode = 'gameStartingCountDownAnimation';
             }
 
+            // if we received a cleared fuzzyLine from the other player, add it to our puffer
+            if (serverEventValueOfOtherPlayer === 'clearedLine') {
+                playerLevelEnvironment[currentPlayer].fuzzyLinesPuffer.push(serverEventDetailsOfOtherPlayer);
+            }
+
             // draw the canvas of the other player
             drawSecondPlayerArea(listOfBlocksInThePlayingAreaOfOtherPlayer);
         }
@@ -260,6 +265,7 @@ function sendGameEvent(eventValue, eventDetails = 0) {
                         // block reached the bottom
                         playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = true;
                         playerLevelEnvironment[currentPlayer].moveCanBeDone = false;
+                        playerLevelEnvironment[currentPlayer].playAreaMode = 'processFuzzyLines';
                     }
                     if (tempCalculationArea[currentPlayer][yOnCalculationArea][xOnCalculationArea] !== 0) {
                         // move can not be done, as the block in the new position would overlap with something
@@ -322,6 +328,7 @@ function sendGameEvent(eventValue, eventDetails = 0) {
 
             if (direction === 'moveDown') {
                 playerLevelEnvironment[currentPlayer].selectANewBlockNextFrame = true;
+                playerLevelEnvironment[currentPlayer].playAreaMode = 'processFuzzyLines';
             }
             if (direction === 'moveLeft') {
                 playerLevelEnvironment[currentPlayer].xPlayArea = playerLevelEnvironment[currentPlayer].xPlayArea + gameLevelEnvironment.pixelSize;
@@ -483,7 +490,7 @@ function sendGameEvent(eventValue, eventDetails = 0) {
                 // we've found a full line in row i
                 fullLineFound = true;
                 playerLevelEnvironment[currentPlayer].fullLines.push(i);
-                // FIXME
+                // send the previous state of this line to the other players
                 const fuzzyLine = previousCalculationArea[currentPlayer][i];
                 sendGameEvent('clearedLine', fuzzyLine);
             }
@@ -1130,6 +1137,58 @@ function sendGameEvent(eventValue, eventDetails = 0) {
     }
 
 
+    // this function adds fuzzy lines from the opponents to the bottom of the playing area
+    // FIXME
+
+    function addFuzzyLinesToBottomOfThePlayingArea(fuzzyLines) {
+
+        const numberOfRows = currentCalculationArea[currentPlayer].length;
+
+        for (let q = 0; q < fuzzyLines.length; q++) {
+
+            // move all blocks upwards
+            for (let k = 0; k < playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.length; k++) {
+                playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea[k].blockY--;
+            }
+
+            let fuzzyLine = fuzzyLines[q];
+            for (let p = 0; p < fuzzyLine.length; p++) {
+                if (fuzzyLine[p] !== 0) {
+                    fuzzyLine[p] = 1;
+                }
+            }
+
+            playerLevelEnvironment[currentPlayer].blockCounter++;
+
+            playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.push({
+                blockMap: [fuzzyLine],
+                blockIndex: 1,
+                blockX: 0,
+                blockY: numberOfRows - 2,
+                blockCounter: playerLevelEnvironment[currentPlayer].blockCounter
+            });
+
+            console.log(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
+            calculateCurrentGravityCalculationArea();
+            copyCurrentGravityCalculationAreaToCurrentCalculationArea();
+        }
+
+
+        playerLevelEnvironment[currentPlayer].fuzzyLinesPuffer = [];
+    }
+
+
+    // this function does the processFuzzyLines Routine
+
+    function processFuzzyLinesRoutine() {
+        console.log("processFuzzyLines");
+
+        addFuzzyLinesToBottomOfThePlayingArea(playerLevelEnvironment[currentPlayer].fuzzyLinesPuffer);
+
+        playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
+    }
+
+
     // this is the game loop, it runs every frame
 
     function gameLoop() {
@@ -1156,6 +1215,8 @@ function sendGameEvent(eventValue, eventDetails = 0) {
             case 'gameStartingCountDownAnimation':
                 gameStartingCountDownAnimationRoutine();
                 break;
+            case 'processFuzzyLines':
+                processFuzzyLinesRoutine();
         }
 
         // increase playerLevelEnvironment[currentPlayer].frameNumber

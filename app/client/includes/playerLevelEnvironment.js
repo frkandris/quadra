@@ -47,6 +47,8 @@ playerId = Math.floor(Math.random() * (max - min + 1) + min);
 let gameStartingCountDownCounter = gameLevelEnvironment.gameStartingCountDownCounterInitialValue; // starting value of countdown counter at game start
 let gameStartingCountDownFrameCounter = gameLevelEnvironment.gameStartingCountDownFrameCounterInitialValue; // number of frames needed to modify gameStartingCountDownCounter
 
+let fuzzyLinesPuffer = []; // we'll store the fuzzy lines arriving from other players, so we could handle them at once
+
 module.exports = {
     fallingSpeed,
     selectANewBlockNextFrame,
@@ -71,5 +73,6 @@ module.exports = {
     playerName,
     playerId,
     gameStartingCountDownCounter,
-    gameStartingCountDownFrameCounter
+    gameStartingCountDownFrameCounter,
+    fuzzyLinesPuffer
 };
