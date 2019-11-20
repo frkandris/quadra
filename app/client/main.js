@@ -31,7 +31,7 @@ const socket = io();
 
 if (multiplayer === true) {
     socket.on('serverEvent', function(serverEventValueOfOtherPlayer, serverEventDetailsOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer, listOfBlocksInThePlayingAreaOfOtherPlayer){
-        console.log('serverEvent', serverEventValueOfOtherPlayer, serverEventDetailsOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer);
+        // console.log('serverEvent', serverEventValueOfOtherPlayer, serverEventDetailsOfOtherPlayer, roomIdOfOtherPlayer, playerIdOfOtherPlayer);
         
         // if this is an event from another player, who is in the same room
         if ( (playerIdOfOtherPlayer !== playerLevelEnvironment[currentPlayer].playerId) && (roomIdOfOtherPlayer === roomId) ) {
@@ -1152,21 +1152,32 @@ function sendGameEvent(eventValue, eventDetails = 0) {
             }
 
             let fuzzyLine = fuzzyLines[q];
+            let map = [];
+            let beginningX = -1;
             for (let p = 0; p < fuzzyLine.length; p++) {
                 if (fuzzyLine[p] !== 0) {
                     fuzzyLine[p] = 1;
+                    map.push(fuzzyLine[p]);
+                    if (beginningX == -1) {
+                        beginningX = p;
+                    }
+                } 
+                if ( (fuzzyLine[p] === 0) || (p === (fuzzyLine.length-1)) ){
+                    if (map.length != 0) {
+                        playerLevelEnvironment[currentPlayer].blockCounter++;
+                        playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.push({
+                            blockMap: [map],
+                            blockIndex: 1,
+                            blockX: beginningX,
+                            blockY: numberOfRows - 2,
+                            blockCounter: playerLevelEnvironment[currentPlayer].blockCounter
+                        });
+                        console.log(beginningX, map);
+                        beginningX = -1;
+                    }
+                    map = [];
                 }
             }
-
-            playerLevelEnvironment[currentPlayer].blockCounter++;
-
-            playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea.push({
-                blockMap: [fuzzyLine],
-                blockIndex: 1,
-                blockX: 0,
-                blockY: numberOfRows - 2,
-                blockCounter: playerLevelEnvironment[currentPlayer].blockCounter
-            });
 
             console.log(playerLevelEnvironment[currentPlayer].listOfBlocksInThePlayingArea);
             calculateCurrentGravityCalculationArea();
@@ -1181,10 +1192,7 @@ function sendGameEvent(eventValue, eventDetails = 0) {
     // this function does the processFuzzyLines Routine
 
     function processFuzzyLinesRoutine() {
-        console.log("processFuzzyLines");
-
         addFuzzyLinesToBottomOfThePlayingArea(playerLevelEnvironment[currentPlayer].fuzzyLinesPuffer);
-
         playerLevelEnvironment[currentPlayer].playAreaMode = 'blockFallingAnimation';
     }
 
